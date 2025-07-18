@@ -1,5 +1,6 @@
 package models
 
+/*
 import "github.com/google/uuid"
 
 type Stop struct {
@@ -11,3 +12,4 @@ type Stop struct {
 	Station   Station   `json:"station" gorm:"foreignKey:StationID"`
 }
 type Stops []Stop
+*/

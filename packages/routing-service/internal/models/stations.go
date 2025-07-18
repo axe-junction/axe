@@ -1,5 +1,7 @@
 package models
 
+/*
+
 import "github.com/google/uuid"
 
 type Station struct {
@@ -17,3 +19,4 @@ type StationRepo interface {
 	GetByID(id string) (Stations, error)
 	GetNearby(latitude, longitude float64) (Stations, error)
 }
+*/
