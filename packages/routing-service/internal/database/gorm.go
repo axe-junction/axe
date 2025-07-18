@@ -18,6 +18,9 @@ func Connect() (*gorm.DB, error) {
 	if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`).Error; err != nil {
 		log.Println("Error enabling uuid extension:", err)
 	}
+	if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "postgis"`).Error; err != nil {
+		log.Println("Error enabling uuid extension:", err)
+	}
 	log.Println("Connected to PostgreSQL using GORM")
 	return db, nil
 }
