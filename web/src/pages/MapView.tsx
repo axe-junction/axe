@@ -916,7 +916,6 @@ export default function MapView() {
                               {option.duration}m
                             </div>
                             <div className="flex items-center gap-1 text-sm text-gray-600">
-                              <DollarSign size={12} />
                               {option.cost} DA
                             </div>
                           </div>
