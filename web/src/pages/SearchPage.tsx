@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, MapPin, Clock, Filter, X } from "lucide-react";
 import TripCard from "../components/TripCard";
 import { useAppStore } from "../store/useAppStore";
+import { searchAlgiersPlaces, type AlgiersPlace } from "../data/algiersPlaces";
 import type { Trip } from "../store/useAppStore";
 
 export default function SearchPage() {
@@ -16,6 +17,10 @@ export default function SearchPage() {
 
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
+  const [fromSuggestions, setFromSuggestions] = useState<AlgiersPlace[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<AlgiersPlace[]>([]);
+  const [showFromSuggestions, setShowFromSuggestions] = useState(false);
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
   const [searchResults, setSearchResults] = useState<Trip[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(searchFilters);
@@ -87,6 +92,38 @@ export default function SearchPage() {
   const transportModes = ["Bus", "Metro", "Tram", "Walk"];
   const providers = ["all", "ETUSA", "TRANSTU", "SETRAM"];
 
+  const handleFromLocationChange = (value: string) => {
+    setFromLocation(value);
+    if (value.trim().length >= 2) {
+      const suggestions = searchAlgiersPlaces(value, 5);
+      setFromSuggestions(suggestions);
+    } else {
+      setFromSuggestions([]);
+    }
+  };
+
+  const handleToLocationChange = (value: string) => {
+    setToLocation(value);
+    if (value.trim().length >= 2) {
+      const suggestions = searchAlgiersPlaces(value, 5);
+      setToSuggestions(suggestions);
+    } else {
+      setToSuggestions([]);
+    }
+  };
+
+  const handleFromSuggestionSelect = (place: AlgiersPlace) => {
+    setFromLocation(place.name);
+    setFromSuggestions([]);
+    setShowFromSuggestions(false);
+  };
+
+  const handleToSuggestionSelect = (place: AlgiersPlace) => {
+    setToLocation(place.name);
+    setToSuggestions([]);
+    setShowToSuggestions(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -105,11 +142,35 @@ export default function SearchPage() {
               />
               <input
                 type="text"
-                placeholder="From"
+                placeholder="From (e.g., Alger Centre, Bab Ezzouar...)"
                 value={fromLocation}
-                onChange={(e) => setFromLocation(e.target.value)}
+                onChange={(e) => handleFromLocationChange(e.target.value)}
+                onFocus={() => setShowFromSuggestions(true)}
+                onBlur={() =>
+                  setTimeout(() => setShowFromSuggestions(false), 200)
+                }
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
+
+              {/* From Suggestions */}
+              {showFromSuggestions && fromSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
+                  {fromSuggestions.map((place) => (
+                    <button
+                      key={place.id}
+                      onClick={() => handleFromSuggestionSelect(place)}
+                      className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="font-medium text-gray-900">
+                        {place.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {place.category} • {place.district}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="relative">
@@ -119,11 +180,35 @@ export default function SearchPage() {
               />
               <input
                 type="text"
-                placeholder="To"
+                placeholder="To (e.g., Airport, University, Hydra...)"
                 value={toLocation}
-                onChange={(e) => setToLocation(e.target.value)}
+                onChange={(e) => handleToLocationChange(e.target.value)}
+                onFocus={() => setShowToSuggestions(true)}
+                onBlur={() =>
+                  setTimeout(() => setShowToSuggestions(false), 200)
+                }
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
+
+              {/* To Suggestions */}
+              {showToSuggestions && toSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
+                  {toSuggestions.map((place) => (
+                    <button
+                      key={place.id}
+                      onClick={() => handleToSuggestionSelect(place)}
+                      className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="font-medium text-gray-900">
+                        {place.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {place.category} • {place.district}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">

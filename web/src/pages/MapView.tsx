@@ -16,17 +16,19 @@ import {
   MapPin,
   Clock,
   Target,
-  Route,
   Bus,
   Train,
   Zap,
   Navigation2,
-  DollarSign,
-  ArrowRight,
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import "leaflet/dist/leaflet.css";
 import { RoutingService } from "../services/routingService";
+import {
+  algiersPlaces,
+  searchAlgiersPlaces,
+  type AlgiersPlace,
+} from "../data/algiersPlaces";
 
 // Real destinations in Algiers
 const popularDestinations = [
@@ -35,6 +37,7 @@ const popularDestinations = [
   { name: "Hydra", lat: 36.7669, lng: 3.0347, category: "District" },
   { name: "Kouba", lat: 36.7333, lng: 3.0833, category: "District" },
   { name: "Birtouta", lat: 36.6167, lng: 3.0167, category: "District" },
+  { name: "El Harrach", lat: 36.7167, lng: 3.1333, category: "District" },
   {
     name: "University of Algiers",
     lat: 36.7167,
@@ -85,6 +88,7 @@ interface RouteOption {
 // Recent destinations with example data
 const exampleRecentDestinations: Destination[] = [
   { name: "Alger Centre", lat: 36.7538, lng: 3.0588, category: "District" },
+  { name: "El Harrach", lat: 36.7167, lng: 3.1333, category: "District" },
   {
     name: "Houari Boumediene Airport",
     lat: 36.691,
@@ -212,11 +216,12 @@ export default function MapView() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [searchFocused, setSearchFocused] = useState(false);
   const [destinationQuery, setDestinationQuery] = useState("");
-  const [filteredDestinations, setFilteredDestinations] = useState<
-    Destination[]
+  const [destinationSuggestions, setDestinationSuggestions] = useState<
+    AlgiersPlace[]
   >([]);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] =
+    useState(false);
   const [selectedDestination, setSelectedDestination] =
     useState<Destination | null>(null);
   const [routeData, setRouteData] = useState<RouteData | null>(null);
@@ -267,16 +272,27 @@ export default function MapView() {
 
   const handleDestinationSearch = (query: string) => {
     setDestinationQuery(query);
-    if (query.trim()) {
-      const filtered = popularDestinations.filter(
-        (dest) =>
-          dest.name.toLowerCase().includes(query.toLowerCase()) ||
-          dest.category.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredDestinations(filtered);
+
+    if (query.trim().length >= 2) {
+      const suggestions = searchAlgiersPlaces(query, 8);
+      setDestinationSuggestions(suggestions);
     } else {
-      setFilteredDestinations([]);
+      setDestinationSuggestions([]);
     }
+  };
+
+  const handleDestinationSuggestionSelect = (place: AlgiersPlace) => {
+    const destination: Destination = {
+      name: place.name,
+      lat: place.lat,
+      lng: place.lng,
+      category: place.category,
+    };
+
+    setDestinationQuery(place.name);
+    setDestinationSuggestions([]);
+    setShowDestinationSuggestions(false);
+    handleDestinationSelect(destination);
   };
 
   const calculateRoute = async (destination: Destination) => {
@@ -325,126 +341,256 @@ export default function MapView() {
   };
 
   const generateRouteOptions = (destination: Destination): RouteOption[] => {
-    const baseDistance = Math.random() * 20 + 5; // 5-25 km
     const isAirport = destination.name.includes("Airport");
     const isUniversity = destination.category === "University";
     const isCentre = destination.name.includes("Centre");
+    const isElHarrach = destination.name.includes("El Harrach");
+
+    // Calculate realistic base distance
+    let baseDistance = 5; // Default km
+    if (currentPosition) {
+      const R = 6371; // Earth's radius in km
+      const dLat = ((destination.lat - currentPosition.lat) * Math.PI) / 180;
+      const dLng = ((destination.lng - currentPosition.lng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((currentPosition.lat * Math.PI) / 180) *
+          Math.cos((destination.lat * Math.PI) / 180) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      baseDistance = R * c;
+    }
 
     const options: RouteOption[] = [];
 
-    // Metro + Walking option
-    if (isCentre || isUniversity) {
+    // Metro + Walking option (realistic for metro-connected areas)
+    if (isCentre || isUniversity || isElHarrach) {
+      const metroTime = isCentre ? 15 : isElHarrach ? 22 : 25; // Realistic metro times
+      const walkingTime = isCentre ? 8 : isElHarrach ? 6 : 10;
+      const totalTime = metroTime + walkingTime + 5; // +5 for waiting/transfers
+
       options.push({
         id: "metro-walk",
         name: "Metro + Walking",
-        duration: Math.floor(baseDistance * 2 + 10),
-        cost: 50,
+        duration: totalTime,
+        cost: 50, // Standard metro fare in Algiers
         transportModes: ["Metro", "Walk"],
-        description: "Fastest route using metro system",
+        description: isElHarrach
+          ? "Metro Line 1 directly serves El Harrach station"
+          : isCentre
+          ? "Quick metro access to city center"
+          : "Fastest route using metro system",
         icon: Train,
         color: "bg-blue-500",
-        steps: [
-          "Walk to nearest metro station (5 min)",
-          "Take Metro Line 1 (25 min)",
-          "Walk to destination (8 min)",
-        ],
+        steps: isElHarrach
+          ? [
+              "Walk to nearest metro station (4 min)",
+              "Take Metro Line 1 towards El Harrach (22 min)",
+              "Exit at El Harrach metro station (1 min)",
+              "Walk to final destination (6 min)",
+            ]
+          : isCentre
+          ? [
+              "Walk to nearest metro station (3 min)",
+              "Take Metro Line 1 to city center (15 min)",
+              "Walk to destination (8 min)",
+            ]
+          : [
+              "Walk to nearest metro station (5 min)",
+              "Take Metro Line 1 (25 min)",
+              "Walk to destination (10 min)",
+            ],
       });
     }
 
-    // Bus option
+    // Bus option (enhanced with realistic times for Algiers)
+    const busTime = Math.max(20, Math.floor(baseDistance * 2.8)); // Realistic bus speed in Algiers traffic
+    const busWalkTime = isCentre ? 5 : isElHarrach ? 4 : 7;
+
     options.push({
       id: "bus",
       name: "Bus Direct",
-      duration: Math.floor(baseDistance * 3 + 15),
-      cost: 30,
+      duration: busTime + busWalkTime,
+      cost: 25, // Standard bus fare in Algiers
       transportModes: ["Bus"],
-      description: "Direct bus route, more affordable",
+      description: isElHarrach
+        ? "Bus lines 15, 22, and 35 serve El Harrach"
+        : isCentre
+        ? "Multiple bus lines to city center"
+        : "Direct bus route, affordable option",
       icon: Bus,
       color: "bg-green-500",
-      steps: [
-        "Walk to bus stop (3 min)",
-        "Take Bus 23 direct route (35 min)",
-        "Walk from bus stop (5 min)",
-      ],
+      steps: isElHarrach
+        ? [
+            "Walk to bus stop (2 min)",
+            "Take Bus 15, 22, or 35 to El Harrach (28 min)",
+            "Walk to destination (4 min)",
+          ]
+        : isCentre
+        ? [
+            "Walk to bus stop (3 min)",
+            "Take Bus 23 or 64 to Alger Centre (18 min)",
+            "Walk to destination (5 min)",
+          ]
+        : [
+            "Walk to bus stop (4 min)",
+            "Take direct bus route (35 min)",
+            "Walk from bus stop (7 min)",
+          ],
     });
 
-    // Tramway option (for certain destinations)
+    // Tramway option (realistic for Algiers tram network)
     if (
       isCentre ||
       destination.name.includes("Hydra") ||
-      destination.name.includes("Kouba")
+      destination.name.includes("Kouba") ||
+      isElHarrach
     ) {
+      const tramTime = isCentre ? 12 : isElHarrach ? 35 : 25; // Tram doesn't directly serve El Harrach
+      const tramWalkTime = isCentre ? 6 : isElHarrach ? 12 : 8; // Longer walk for El Harrach
+      const transferTime = isElHarrach ? 8 : 0; // Transfer needed for El Harrach
+
       options.push({
         id: "tram-walk",
-        name: "Tramway + Walking",
-        duration: Math.floor(baseDistance * 2.5 + 8),
-        cost: 40,
-        transportModes: ["Tram", "Walk"],
-        description: "Scenic route via tramway",
+        name: isElHarrach ? "Tram + Bus" : "Tramway + Walking",
+        duration: tramTime + tramWalkTime + transferTime,
+        cost: isElHarrach ? 65 : 40, // Tram + bus for El Harrach
+        transportModes: isElHarrach
+          ? ["Tram", "Bus", "Walk"]
+          : ["Tram", "Walk"],
+        description: isElHarrach
+          ? "Tram to city center, then bus to El Harrach"
+          : isCentre
+          ? "Scenic tram route to city center"
+          : "Comfortable tram journey",
         icon: Zap,
         color: "bg-yellow-500",
-        steps: [
-          "Walk to tram station (4 min)",
-          "Take Tram Line A (20 min)",
-          "Walk to destination (6 min)",
-        ],
+        steps: isElHarrach
+          ? [
+              "Walk to Tram Line A (5 min)",
+              "Take tram to Tafourah (12 min)",
+              "Transfer to Bus 22 (3 min)",
+              "Take bus to El Harrach (20 min)",
+              "Walk to destination (8 min)",
+            ]
+          : isCentre
+          ? [
+              "Walk to Tram Line A (4 min)",
+              "Take tram to city center (12 min)",
+              "Walk to destination (6 min)",
+            ]
+          : [
+              "Walk to tram station (5 min)",
+              "Take Tram Line A (25 min)",
+              "Walk to destination (8 min)",
+            ],
       });
     }
 
-    // Combined transport option
+    // Combined transport option (realistic multi-modal for Algiers)
     if (!isAirport) {
+      const combinedTime = isCentre ? 25 : isElHarrach ? 32 : 35;
+
       options.push({
         id: "combined",
         name: "Bus + Metro",
-        duration: Math.floor(baseDistance * 2.2 + 12),
-        cost: 70,
+        duration: combinedTime,
+        cost: 75, // Combined fare
         transportModes: ["Bus", "Metro"],
-        description: "Optimized multi-modal route",
+        description: isElHarrach
+          ? "Bus to metro, then Metro Line 1 to El Harrach"
+          : isCentre
+          ? "Quick bus connection to metro system"
+          : "Optimized multi-modal route",
         icon: Navigation2,
         color: "bg-purple-500",
-        steps: [
-          "Walk to bus stop (3 min)",
-          "Take Bus 12 (15 min)",
-          "Transfer to Metro at Tafourah (2 min)",
-          "Take Metro Line 1 (18 min)",
-          "Walk to destination (7 min)",
-        ],
+        steps: isElHarrach
+          ? [
+              "Walk to bus stop (3 min)",
+              "Take Bus 12 to Tafourah Metro (12 min)",
+              "Transfer to Metro Line 1 (2 min)",
+              "Take Metro to El Harrach station (18 min)",
+              "Walk to destination (5 min)",
+            ]
+          : isCentre
+          ? [
+              "Walk to bus stop (2 min)",
+              "Take Bus 11 to 1er Mai Metro (8 min)",
+              "Transfer to Metro Line 1 (2 min)",
+              "Take Metro to city center (10 min)",
+              "Walk to destination (5 min)",
+            ]
+          : [
+              "Walk to bus stop (3 min)",
+              "Take Bus 12 to metro connection (15 min)",
+              "Transfer to Metro Line 1 (2 min)",
+              "Take Metro to destination area (18 min)",
+              "Walk to destination (7 min)",
+            ],
       });
     }
 
-    // Airport express (for airport destinations)
-    if (isAirport) {
+    // Taxi/Ride option (realistic for Algiers)
+    if (baseDistance < 15) {
+      const taxiTime = Math.max(15, Math.floor(baseDistance * 2.2)); // Faster than bus due to direct route
+      const taxiCost = Math.max(200, Math.floor(baseDistance * 80)); // Realistic taxi fare in DA
+
       options.push({
-        id: "airport-express",
-        name: "Airport Express",
-        duration: Math.floor(baseDistance * 1.5 + 5),
-        cost: 150,
-        transportModes: ["Bus"],
-        description: "Direct airport shuttle service",
+        id: "taxi",
+        name: "Taxi",
+        duration: taxiTime,
+        cost: taxiCost,
+        transportModes: ["Taxi"],
+        description: isElHarrach
+          ? "Direct taxi ride via main roads"
+          : isCentre
+          ? "Quick taxi to city center"
+          : "Private, direct transport",
         icon: Navigation2,
-        color: "bg-red-500",
+        color: "bg-orange-500",
         steps: [
-          "Walk to shuttle stop (2 min)",
-          "Take Airport Express (35 min)",
-          "Arrive at terminal (3 min)",
+          "Call taxi or find taxi stand (3 min)",
+          `Direct ride to ${destination.name} (${taxiTime - 3} min)`,
         ],
       });
     }
 
-    // Walking option (for nearby destinations)
-    if (baseDistance < 8) {
+    // Walking option (for nearby destinations only)
+    if (baseDistance < 5) {
+      const walkingTime = Math.floor(baseDistance * 12); // 5 km/h walking speed
+
       options.push({
         id: "walking",
         name: "Walking",
-        duration: Math.floor(baseDistance * 12),
+        duration: walkingTime,
         cost: 0,
         transportModes: ["Walk"],
-        description: "Free, healthy option",
+        description: "Free, healthy option for short distances",
         icon: Navigation2,
         color: "bg-gray-500",
         steps: [
-          "Walk directly to destination",
-          "Estimated walking time based on distance",
+          "Walk directly via main streets",
+          `Estimated walking time: ${walkingTime} minutes`,
+        ],
+      });
+    }
+
+    // Airport express (only for airport destinations)
+    if (isAirport) {
+      options.push({
+        id: "airport-express",
+        name: "Airport Express Bus",
+        duration: 45,
+        cost: 200, // Premium airport service
+        transportModes: ["Airport Bus"],
+        description: "Direct airport shuttle from city center",
+        icon: Navigation2,
+        color: "bg-red-500",
+        steps: [
+          "Walk to airport shuttle stop (5 min)",
+          "Take Airport Express Bus (35 min)",
+          "Arrive at terminal (5 min)",
         ],
       });
     }
@@ -454,8 +600,6 @@ export default function MapView() {
 
   const handleDestinationSelect = (destination: Destination) => {
     setSelectedDestination(destination);
-    setDestinationQuery(destination.name);
-    setSearchFocused(false);
     addRecentSearch(destination.name);
 
     // Generate route options
@@ -479,74 +623,124 @@ export default function MapView() {
 
     try {
       let routePath: { lat: number; lng: number }[] = [];
+      const isElHarrach = destination.name.includes("El Harrach");
 
       // Generate different routes based on transport mode
       if (option.id === "metro-walk") {
-        // Route via metro stations
-        const metroStations = [
-          { lat: 36.7538, lng: 3.0588 }, // Alger Centre (metro hub)
-          { lat: 36.7403, lng: 3.0508 }, // Tafourah station
-        ];
+        // Route via metro stations (enhanced for El Harrach)
+        const metroStations = isElHarrach
+          ? [
+              { lat: 36.7403, lng: 3.0508 }, // Tafourah station
+              { lat: 36.7333, lng: 3.0833 }, // Kouba station
+              { lat: 36.7167, lng: 3.1333 }, // El Harrach metro station
+            ]
+          : [
+              { lat: 36.7538, lng: 3.0588 }, // Alger Centre (metro hub)
+              { lat: 36.7403, lng: 3.0508 }, // Tafourah station
+            ];
+
         routePath = [
           currentPosition,
-          metroStations[0],
-          metroStations[1],
+          ...metroStations,
           { lat: destination.lat, lng: destination.lng },
         ];
       } else if (option.id === "tram-walk") {
-        // Route via tram lines
-        const tramStations = [
-          { lat: 36.7669, lng: 3.0347 }, // Hydra tram
-          { lat: 36.7525, lng: 3.0519 }, // Maqam Echahid
-        ];
+        // Route via tram lines (enhanced for El Harrach)
+        const tramStations = isElHarrach
+          ? [
+              { lat: 36.7669, lng: 3.0347 }, // Hydra tram
+              { lat: 36.7525, lng: 3.0519 }, // Maqam Echahid
+              { lat: 36.7403, lng: 3.0508 }, // Tafourah transfer
+              { lat: 36.725, lng: 3.09 }, // Intermediate stop towards El Harrach
+            ]
+          : [
+              { lat: 36.7669, lng: 3.0347 }, // Hydra tram
+              { lat: 36.7525, lng: 3.0519 }, // Maqam Echahid
+            ];
+
         routePath = [
           currentPosition,
-          tramStations[0],
-          tramStations[1],
+          ...tramStations,
           { lat: destination.lat, lng: destination.lng },
         ];
       } else if (option.id === "bus") {
-        // Direct bus route with fewer stops
-        const busStops = [
-          {
-            lat:
-              currentPosition.lat +
-              (destination.lat - currentPosition.lat) * 0.3,
-            lng:
-              currentPosition.lng +
-              (destination.lng - currentPosition.lng) * 0.3,
-          },
-          {
-            lat:
-              currentPosition.lat +
-              (destination.lat - currentPosition.lat) * 0.7,
-            lng:
-              currentPosition.lng +
-              (destination.lng - currentPosition.lng) * 0.7,
-          },
-        ];
-        routePath = [
-          currentPosition,
-          ...busStops,
-          { lat: destination.lat, lng: destination.lng },
-        ];
+        // Enhanced bus route for El Harrach
+        if (isElHarrach) {
+          const elHarrachBusStops = [
+            { lat: 36.745, lng: 3.065 }, // Central bus hub
+            { lat: 36.735, lng: 3.095 }, // Intermediate stop
+            { lat: 36.725, lng: 3.115 }, // El Harrach approach
+          ];
+          routePath = [
+            currentPosition,
+            ...elHarrachBusStops,
+            { lat: destination.lat, lng: destination.lng },
+          ];
+        } else {
+          // Direct bus route with fewer stops
+          const busStops = [
+            {
+              lat:
+                currentPosition.lat +
+                (destination.lat - currentPosition.lat) * 0.3,
+              lng:
+                currentPosition.lng +
+                (destination.lng - currentPosition.lng) * 0.3,
+            },
+            {
+              lat:
+                currentPosition.lat +
+                (destination.lat - currentPosition.lat) * 0.7,
+              lng:
+                currentPosition.lng +
+                (destination.lng - currentPosition.lng) * 0.7,
+            },
+          ];
+          routePath = [
+            currentPosition,
+            ...busStops,
+            { lat: destination.lat, lng: destination.lng },
+          ];
+        }
       } else if (option.id === "combined") {
-        // Bus + Metro combination
-        const transferPoint = { lat: 36.7403, lng: 3.0508 }; // Tafourah transfer
-        const busStop = {
-          lat:
-            currentPosition.lat +
-            (transferPoint.lat - currentPosition.lat) * 0.5,
-          lng:
-            currentPosition.lng +
-            (transferPoint.lng - currentPosition.lng) * 0.5,
-        };
-        routePath = [
-          currentPosition,
-          busStop,
-          transferPoint,
-          { lat: destination.lat, lng: destination.lng },
-        ];
+        // Enhanced combined transport for El Harrach
+        if (isElHarrach) {
+          const transferPoint = { lat: 36.7403, lng: 3.0508 }; // Tafourah transfer
+          const busStop = {
+            lat:
+              currentPosition.lat +
+              (transferPoint.lat - currentPosition.lat) * 0.4,
+            lng:
+              currentPosition.lng +
+              (transferPoint.lng - currentPosition.lng) * 0.4,
+          };
+          const metroToElHarrach = { lat: 36.725, lng: 3.12 }; // Metro route to El Harrach
+
+          routePath = [
+            currentPosition,
+            busStop,
+            transferPoint,
+            metroToElHarrach,
+            { lat: destination.lat, lng: destination.lng },
+          ];
+        } else {
+          // Bus + Metro combination
+          const transferPoint = { lat: 36.7403, lng: 3.0508 }; // Tafourah transfer
+          const busStop = {
+            lat:
+              currentPosition.lat +
+              (transferPoint.lat - currentPosition.lat) * 0.5,
+            lng:
+              currentPosition.lng +
+              (transferPoint.lng - currentPosition.lng) * 0.5,
+          };
+          routePath = [
+            currentPosition,
+            busStop,
+            transferPoint,
+            { lat: destination.lat, lng: destination.lng },
+          ];
+        }
       } else if (option.id === "airport-express") {
         // Direct highway route to airport
         const highwayPoint = { lat: 36.7, lng: 3.15 }; // Highway junction
@@ -617,6 +811,8 @@ export default function MapView() {
     setSelectedDestination(null);
     setRouteData(null);
     setDestinationQuery("");
+    setDestinationSuggestions([]);
+    setShowDestinationSuggestions(false);
     setRouteOptions([]);
     setSelectedRouteOption(null);
   };
@@ -695,9 +891,13 @@ export default function MapView() {
           </div>
         )}
 
-        {/* Map Container - Fixed height on mobile, flexible on desktop */}
-        <div className="h-[50vh] lg:flex-1 relative">
-          <MapContainer center={mapCenter} zoom={12} className="h-full w-full">
+        {/* Map Container - Adjusted height with bottom padding */}
+        <div className="h-[calc(50vh-2rem)] lg:flex-1 relative mb-4 lg:mb-0">
+          <MapContainer
+            center={mapCenter}
+            zoom={12}
+            className="h-full w-full rounded-lg lg:rounded-none"
+          >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -755,7 +955,7 @@ export default function MapView() {
       </div>
 
       {/* Right Panel - Search and Route Options */}
-      <div className="flex-1 lg:min-w-[30%] lg:max-w-[400px] bg-white border-l border-gray-200 flex flex-col">
+      <div className="flex-1 lg:min-w-[30%] lg:max-w-[400px] bg-white border-l border-gray-200 flex flex-col mb-4 lg:mb-0">
         {/* Search Section */}
         <div className="p-4 border-b flex-shrink-0">
           <div className="space-y-3">
@@ -782,22 +982,24 @@ export default function MapView() {
               </span>
             </div>
 
-            {/* Destination Search */}
+            {/* Destination Search - Exactly like SearchPage */}
             <div className="relative">
-              <Search
+              <MapPin
                 size={20}
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
               />
               <input
                 type="text"
-                placeholder="Where do you want to go?"
+                placeholder="Where do you want to go? (e.g., Alger Centre, Airport...)"
                 value={destinationQuery}
                 onChange={(e) => handleDestinationSearch(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+                onFocus={() => setShowDestinationSuggestions(true)}
+                onBlur={() =>
+                  setTimeout(() => setShowDestinationSuggestions(false), 200)
+                }
                 className="w-full pl-10 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base"
               />
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+              <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 flex gap-1">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -808,75 +1010,99 @@ export default function MapView() {
                   <Navigation size={16} />
                 </button>
               </div>
-            </div>
 
-            {/* Search Results Dropdown */}
-            {(searchFocused || destinationQuery) && !selectedDestination && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto mx-4">
-                {destinationQuery && filteredDestinations.length > 0 && (
-                  <div className="p-2">
-                    <div className="text-xs text-gray-500 mb-2 px-2">
-                      Search Results
-                    </div>
-                    {filteredDestinations
-                      .slice(0, 5)
-                      .map((destination, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleDestinationSelect(destination)}
-                          className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <MapPin size={16} className="text-gray-400" />
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {destination.name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {destination.category}
-                              </div>
+              {/* Destination Suggestions - Exactly like SearchPage */}
+              {showDestinationSuggestions &&
+                destinationSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
+                    {destinationSuggestions.map((place) => (
+                      <button
+                        key={place.id}
+                        onClick={() => handleDestinationSuggestionSelect(place)}
+                        className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <MapPin size={16} className="text-gray-400" />
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {place.name}
+                            </div>
+                            <div className="text-sm text-gray-500 flex items-center gap-2">
+                              <span>{place.category}</span>
+                              <span>•</span>
+                              <span>{place.district}</span>
+                              {place.arabicName && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-xs">
+                                    {place.arabicName}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
-                        </button>
-                      ))}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 )}
 
-                {!destinationQuery && (
-                  <div className="p-2">
-                    <div className="text-xs text-gray-500 mb-2 px-2">
+              {/* Show popular destinations when focused but empty - like SearchPage */}
+              {showDestinationSuggestions && !destinationQuery.trim() && (
+                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
+                  <div className="p-3 border-b border-gray-100">
+                    <div className="text-xs text-gray-500 mb-2">
                       Popular Destinations
                     </div>
-                    {popularDestinations
-                      .slice(0, 5)
-                      .map((destination, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleDestinationSelect(destination)}
-                          className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <MapPin size={16} className="text-gray-400" />
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {destination.name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {destination.category}
-                              </div>
+                  </div>
+                  {algiersPlaces
+                    .sort((a, b) => b.popularity - a.popularity)
+                    .slice(0, 5)
+                    .map((place) => (
+                      <button
+                        key={place.id}
+                        onClick={() => handleDestinationSuggestionSelect(place)}
+                        className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <MapPin size={16} className="text-gray-400" />
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {place.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {place.category} • {place.district}
                             </div>
                           </div>
-                        </button>
-                      ))}
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              )}
+
+              {/* No results message - like SearchPage */}
+              {showDestinationSuggestions &&
+                destinationQuery.trim() &&
+                destinationQuery.length >= 2 &&
+                destinationSuggestions.length === 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10 mt-1">
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="text-sm">
+                        No places found for "{destinationQuery}"
+                      </div>
+                      <div className="text-xs mt-1">
+                        Try searching for districts, landmarks, or popular
+                        places
+                      </div>
+                    </div>
                   </div>
                 )}
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
         {/* Route Options or Recent Destinations */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-4">
           {selectedDestination && routeOptions.length > 0 ? (
             // Route Options
             <>
