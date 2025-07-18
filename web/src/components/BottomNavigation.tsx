@@ -13,7 +13,7 @@ export default function BottomNavigation() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 lg:hidden z-40">
       <div className="flex justify-around items-center py-2">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
@@ -21,14 +21,14 @@ export default function BottomNavigation() {
             <Link
               key={path}
               to={path}
-              className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
+              className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors min-w-0 ${
                 isActive
                   ? "text-primary bg-primary/10"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <Icon size={24} />
-              <span className="text-xs mt-1">{label}</span>
+              <Icon size={22} />
+              <span className="text-xs mt-1 truncate">{label}</span>
             </Link>
           );
         })}

@@ -25,6 +25,61 @@ body {
   color: #1f2937;
 }
 
+/* Ensure full height layout */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Navbar full width */
+nav {
+  width: 100vw;
+}
+
+/* Ensure proper container widths */
+.max-w-7xl {
+  max-width: none;
+  width: 100%;
+}
+
+/* Fix leaflet map height issues */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* Ensure content doesn't overflow */
+main {
+  height: calc(100vh - 64px); /* Subtract navbar height */
+}
+
+@media (max-width: 1024px) {
+  main {
+    height: calc(100vh - 64px - 80px); /* Subtract navbar and bottom nav */
+  }
+
+  /* On mobile, ensure map doesn't take full height */
+  .leaflet-container {
+    max-height: 50vh;
+  }
+}
+
+/* Map container constraints */
+.map-container {
+  min-height: 300px;
+  max-height: 70vh;
+}
+
+@media (min-width: 1024px) {
+  .map-container {
+    max-height: none;
+    height: 100%;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -43,11 +98,6 @@ body {
   background: #94a3b8;
 }
 
-/* Leaflet map styles */
-.leaflet-container {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-}
-
 /* Leaflet routing machine styles */
 .leaflet-routing-container {
   display: none !important; /* Hide the routing instructions panel */
@@ -57,15 +107,15 @@ body {
   display: none !important; /* Hide alternative routes */
 }
 
-/* Ensure route lines are properly styled */
+/* Ensure route lines are properly styled and visible */
 .leaflet-routing-line {
-  stroke: #3b82f6 !important;
   stroke-width: 6 !important;
   stroke-opacity: 1 !important;
   stroke-linecap: round !important;
   stroke-linejoin: round !important;
   fill: none !important;
   stroke-dasharray: none !important;
+  pointer-events: none !important;
 }
 
 /* Route line hover effects */
@@ -80,18 +130,29 @@ body {
 
 /* Override any conflicting styles */
 .leaflet-overlay-pane svg path {
-  pointer-events: visibleStroke;
+  pointer-events: none !important;
 }
 
-/* Ensure the route polyline is visible */
+/* Ensure polylines are always visible */
 .leaflet-interactive {
   cursor: pointer;
 }
 
-/* Fix for routing line visibility */
+/* Make sure route polylines are rendered above other elements */
+.leaflet-overlay-pane svg {
+  z-index: 1000 !important;
+}
+
+/* Ensure route visibility */
 .leaflet-routing-line,
 .leaflet-routing-shadow {
-  pointer-events: none;
+  pointer-events: none !important;
+  display: block !important;
+}
+
+/* Force polyline visibility */
+.leaflet-overlay-pane path {
+  display: block !important;
 }
 
 /* Custom transitions */
@@ -128,5 +189,55 @@ body {
 @media print {
   .no-print {
     display: none !important;
+  }
+}
+
+/* Navbar styles */
+.navbar-mobile-menu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.navbar-mobile-menu.open {
+  max-height: 400px;
+}
+
+/* Ensure proper z-index layering */
+.navbar {
+  z-index: 30;
+}
+
+.mobile-menu-overlay {
+  z-index: 35;
+}
+
+/* Smooth transitions for mobile menu */
+.mobile-menu-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.mobile-menu-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-menu-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-menu-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Ensure content doesn't overlap with navbar */
+@media (min-width: 1024px) {
+  .main-content {
+    padding-top: 0;
   }
 }
