@@ -1,115 +1,141 @@
 package database
 
 import (
-	"fmt"
-	"log"
+	"math"
 
 	"github.com/axe-junction/axe-server/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
+func calculateHaversineDistance(lat1, lon1, lat2, lon2 float64) float64 {
+	const R = 6371000 // Earth radius in meters
+	φ1 := lat1 * math.Pi / 180
+	φ2 := lat2 * math.Pi / 180
+	Δφ := (lat2 - lat1) * math.Pi / 180
+	Δλ := (lon2 - lon1) * math.Pi / 180
+
+	a := math.Sin(Δφ/2)*math.Sin(Δφ/2) +
+		math.Cos(φ1)*math.Cos(φ2)*
+			math.Sin(Δλ/2)*math.Sin(Δλ/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	return R * c
+}
+
+func createStations() []models.Station {
+	return []models.Station{
+		{ID: uuid.New(), Name: "Place des Martyrs", Latitude: 36.7764, Longitude: 3.0585, Type: "tram"},
+		{ID: uuid.New(), Name: "Khelifa Boukhalfa", Latitude: 36.7703, Longitude: 3.0542, Type: "tram"},
+		{ID: uuid.New(), Name: "Place du 1er Mai", Latitude: 36.7636, Longitude: 3.0501, Type: "tram"},
+		{ID: uuid.New(), Name: "Les Ateliers", Latitude: 36.7568, Longitude: 3.0460, Type: "tram"},
+		{ID: uuid.New(), Name: "Cité Mokhtar Zerhouni", Latitude: 36.7500, Longitude: 3.0419, Type: "tram"},
+
+		{ID: uuid.New(), Name: "Tafourah", Latitude: 36.7740, Longitude: 3.0600, Type: "metro"},
+		{ID: uuid.New(), Name: "Khelifa Boukhalfa (M)", Latitude: 36.7703, Longitude: 3.0542, Type: "metro"},
+		{ID: uuid.New(), Name: "1 Mai (M)", Latitude: 36.7636, Longitude: 3.0501, Type: "metro"},
+
+		{ID: uuid.New(), Name: "Gare d'Alger", Latitude: 36.7840, Longitude: 3.0560, Type: "bus"},
+		{ID: uuid.New(), Name: "Bab El Oued", Latitude: 36.7890, Longitude: 3.0500, Type: "bus"},
+		{ID: uuid.New(), Name: "Université de Bab Ezzouar", Latitude: 36.7128, Longitude: 3.1825, Type: "train"},
+	}
+}
+
 func Seed(db *gorm.DB) error {
-	log.Println("🌱 Starting database seeding...")
-
-	// Clean existing data first
-	log.Println("🧹 Cleaning existing data...")
-	db.Exec("DELETE FROM stops")
-	db.Exec("DELETE FROM lignes")
-	db.Exec("DELETE FROM stations")
-
-	// Create Stations
-	stations := []models.Station{
-		{ID: uuid.New(), Name: "Kouba", Latitude: 36.7322, Longitude: 3.0801, Type: "Bus"},
-		{ID: uuid.New(), Name: "El Madania", Latitude: 36.7405, Longitude: 3.0709, Type: "Bus"},
-		{ID: uuid.New(), Name: "Belouizdad", Latitude: 36.7486, Longitude: 3.0600, Type: "Bus"},
-		{ID: uuid.New(), Name: "Didouche Mourad", Latitude: 36.7535, Longitude: 3.0582, Type: "Bus"},
-		{ID: uuid.New(), Name: "Tafourah", Latitude: 36.7601, Longitude: 3.0507, Type: "Bus"},
-		{ID: uuid.New(), Name: "Place des Martyrs", Latitude: 36.7710, Longitude: 3.0588, Type: "Bus"},
-		{ID: uuid.New(), Name: "Bab El Oued", Latitude: 36.7833, Longitude: 3.0500, Type: "Bus"},
-		{ID: uuid.New(), Name: "Rais Hamidou", Latitude: 36.7900, Longitude: 3.0410, Type: "Bus"},
-	}
-
-	log.Printf("📍 Creating %d stations...", len(stations))
+	stations := createStations()
 	if err := db.Create(&stations).Error; err != nil {
-		return fmt.Errorf("failed to seed stations: %w", err)
-	}
-	log.Printf("✅ Created %d stations successfully", len(stations))
-
-	// Create Routes
-	routes := []models.Ligne{
-		{ID: uuid.New(), Name: "Route 1", Type: "Bus"},
-		{ID: uuid.New(), Name: "Route 2", Type: "Bus"},
+		return err
 	}
 
-	log.Printf("🚌 Creating %d routes...", len(routes))
-	if err := db.Create(&routes).Error; err != nil {
-		return fmt.Errorf("failed to seed routes: %w", err)
-	}
-	log.Printf("✅ Created %d routes successfully", len(routes))
-
-	// Create Stops for Route 1 (connecting first 4 stations)
-	var stops []models.Stop
-	log.Println("🚏 Creating stops for Route 1...")
-	for i := 0; i < 4; i++ {
-		if i >= len(stations) {
-			break
-		}
-		stop := models.Stop{
-			ID:        uuid.New(),
-			RouteID:   routes[0].ID,
-			StationID: stations[i].ID,
-			Sequence:  i + 1,
-		}
-		stops = append(stops, stop)
-		log.Printf("   Added stop %d: %s (sequence: %d)", i+1, stations[i].Name, stop.Sequence)
+	lines := []models.Line{
+		{ID: uuid.New(), Name: "Tramway T1", Type: "tram"},
+		{ID: uuid.New(), Name: "Metro Line 1", Type: "metro"},
+		{ID: uuid.New(), Name: "Bus 100", Type: "bus"},
 	}
 
-	// Create Stops for Route 2 (connecting stations 4-7 with proper sequence)
-	log.Println("🚏 Creating stops for Route 2...")
-	for i := 3; i < 7; i++ {
-		if i >= len(stations) {
-			break
-		}
-		sequenceNum := i - 3 + 1 // This will be 1, 2, 3, 4
-		stop := models.Stop{
-			ID:        uuid.New(),
-			RouteID:   routes[1].ID,
-			StationID: stations[i].ID,
-			Sequence:  sequenceNum,
-		}
-		stops = append(stops, stop)
-		log.Printf("   Added stop %d: %s (sequence: %d)", sequenceNum, stations[i].Name, stop.Sequence)
+	if err := db.Create(&lines).Error; err != nil {
+		return err
 	}
 
-	log.Printf("🚏 Creating %d stops...", len(stops))
-	for i, stop := range stops {
-		if err := db.Create(&stop).Error; err != nil {
-			log.Printf("❌ Failed to create stop %d: %v", i+1, err)
-			return fmt.Errorf("failed to seed stop %d: %w", i+1, err)
-		}
-		log.Printf("✅ Created stop %d: RouteID=%s, StationID=%s, Sequence=%d", i+1, stop.RouteID, stop.StationID, stop.Sequence)
-	}
-	log.Printf("✅ Created %d stops successfully", len(stops))
+	createStops(db, stations, lines)
 
-	// Debug: Let's verify the data was created correctly
-	var verifyStations []models.Station
-	db.Find(&verifyStations)
-	log.Printf("🔍 Verification: Found %d stations in database", len(verifyStations))
+	createTransfers(db, stations)
 
-	var verifyRoutes []models.Ligne
-	db.Find(&verifyRoutes)
-	log.Printf("🔍 Verification: Found %d routes in database", len(verifyRoutes))
-
-	var verifyStops []models.Stop
-	db.Find(&verifyStops)
-	log.Printf("🔍 Verification: Found %d stops in database", len(verifyStops))
-
-	// Show the actual stops created
-	for _, stop := range verifyStops {
-		log.Printf("   Stop: RouteID=%s, StationID=%s, Sequence=%d", stop.RouteID, stop.StationID, stop.Sequence)
-	}
-
-	log.Println("✅ Seeding completed successfully.")
 	return nil
+}
+
+func createStops(db *gorm.DB, stations []models.Station, lines []models.Line) {
+	// Example: Tramway T1 route
+	tramStations := []string{
+		"Place des Martyrs", "Khelifa Boukhalfa", "Place du 1er Mai",
+		"Les Ateliers", "Cité Mokhtar Zerhouni",
+	}
+
+	for i, name := range tramStations {
+		for _, station := range stations {
+			if station.Name == name {
+				stop := models.Stop{
+					ID:        uuid.New(),
+					LineID:    lines[0].ID,
+					StationID: station.ID,
+					Sequence:  i + 1,
+				}
+				db.Create(&stop)
+				break
+			}
+		}
+	}
+
+	// Add similar for other lines...
+}
+
+func createTransfers(db *gorm.DB, stations []models.Station) {
+	// Create transfers between key interchange stations
+	interchanges := map[string][]string{
+		"Place des Martyrs": {"Khelifa Boukhalfa", "Tafourah"},
+		"Tafourah":          {"Place des Martyrs", "Khelifa Boukhalfa"},
+	}
+
+	for fromName, toNames := range interchanges {
+		var fromStation models.Station
+		for _, s := range stations {
+			if s.Name == fromName {
+				fromStation = s
+				break
+			}
+		}
+
+		for _, toName := range toNames {
+			var toStation models.Station
+			for _, s := range stations {
+				if s.Name == toName {
+					toStation = s
+					break
+				}
+			}
+
+			if fromStation.ID != uuid.Nil && toStation.ID != uuid.Nil {
+				// Calculate walking distance
+				distance := calculateHaversineDistance(
+					fromStation.Latitude, fromStation.Longitude,
+					toStation.Latitude, toStation.Longitude,
+				)
+
+				// Create transfer in both directions
+				db.Create(&models.Transfer{
+					FromStationID:   fromStation.ID,
+					ToStationID:     toStation.ID,
+					WalkingDistance: distance,
+					WalkingTime:     distance / 1.4, // 5km/h walking speed
+				})
+
+				db.Create(&models.Transfer{
+					FromStationID:   toStation.ID,
+					ToStationID:     fromStation.ID,
+					WalkingDistance: distance,
+					WalkingTime:     distance / 1.4,
+				})
+			}
+		}
+	}
 }
