@@ -189,7 +189,8 @@ export default function TransitApp() {
     }
 
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+
         <MapView
           style={styles.mapBackground}
           customMapStyle={customMapStyle}
@@ -264,7 +265,7 @@ export default function TransitApp() {
           ))}
         </BlurView>
 
-        <BlurView intensity={20} style={styles.bottomNavigation}>
+        {/* <BlurView intensity={20} style={styles.bottomNavigation}>
           <TouchableOpacity style={[styles.navButton, styles.activeNavButton]}>
             <Ionicons name="map" size={24} color="#6b46c1" />
             <Text style={[styles.navButtonText, styles.activeNavButtonText]}>Map</Text>
@@ -279,8 +280,8 @@ export default function TransitApp() {
             <Ionicons name="person" size={24} color="#9ca3af" />
             <Text style={styles.navButtonText}>Profil</Text>
           </TouchableOpacity>
-        </BlurView>
-      </View>
+        </BlurView> */}
+      </SafeAreaView>
     );
   }
 
