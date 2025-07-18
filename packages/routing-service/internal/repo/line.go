@@ -46,10 +46,10 @@ func (r *LineRepo) GetRouteBetweenStations(ctx context.Context, startID, endID u
 	return lines, err
 }
 
-func (r *LineRepo) GetStopsForLine(lineID uuid.UUID) ([]models.Stop, error) {
-	var stops []models.Stop
+func (r *LineRepo) GetStopsForLine(lineID uuid.UUID) (models.LigneStops, error) {
+	var stops []models.LigneStop
 	err := r.db.Preload("Station").
-		Where("line_id = ?", lineID).
+		Where("route_id = ?", lineID).
 		Order("sequence").
 		Find(&stops).Error
 	return stops, err
@@ -79,7 +79,7 @@ func (r *LegacyLineRepoWrapper) GetAll() (models.Lines, error) {
 			ID:     ligne.ID,
 			Name:   ligne.Name,
 			Type:   ligne.Type,
-			Agency: ligne.Agency,
+			Agency: "", // Agency field not available in lignes table
 		}
 	}
 	return lines, nil
@@ -95,7 +95,7 @@ func (r *LegacyLineRepoWrapper) GetByID(id uuid.UUID) (models.Line, error) {
 		ID:     ligne.ID,
 		Name:   ligne.Name,
 		Type:   ligne.Type,
-		Agency: ligne.Agency,
+		Agency: "", // Agency field not available in lignes table
 	}, nil
 }
 
@@ -112,7 +112,7 @@ func (r *LegacyLineRepoWrapper) GetByType(typee string) (models.Lines, error) {
 			ID:     ligne.ID,
 			Name:   ligne.Name,
 			Type:   ligne.Type,
-			Agency: ligne.Agency,
+			Agency: "", // Agency field not available in lignes table
 		}
 	}
 	return lines, nil
@@ -131,12 +131,28 @@ func (r *LegacyLineRepoWrapper) GetRouteBetweenStations(ctx context.Context, sta
 			ID:     ligne.ID,
 			Name:   ligne.Name,
 			Type:   ligne.Type,
-			Agency: ligne.Agency,
+			Agency: "", // Agency field not available in lignes table
 		}
 	}
 	return lines, nil
 }
 
 func (r *LegacyLineRepoWrapper) GetStopsForLine(lineID uuid.UUID) ([]models.Stop, error) {
-	return r.repo.GetStopsForLine(lineID)
+	ligneStops, err := r.repo.GetStopsForLine(lineID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert LigneStops to []Stop
+	stops := make([]models.Stop, len(ligneStops))
+	for i, ligneStop := range ligneStops {
+		stops[i] = models.Stop{
+			ID:        ligneStop.ID,
+			LineID:    ligneStop.RouteID, // Map RouteID to LineID
+			StationID: ligneStop.StationID,
+			Sequence:  ligneStop.Sequence,
+			Station:   ligneStop.Station,
+		}
+	}
+	return stops, nil
 }
