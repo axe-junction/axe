@@ -44,6 +44,7 @@ interface AppState {
   trips: Trip[];
   favoriteTrips: Trip[];
   recentSearches: string[];
+  recentDestinations: string[];
 
   // Community state
   communityPosts: CommunityPost[];
@@ -51,6 +52,7 @@ interface AppState {
   // Map state
   selectedTrip: Trip | null;
   mapCenter: [number, number];
+  selectedDestination: { name: string; lat: number; lng: number } | null;
 
   // Search state
   searchQuery: string;
@@ -84,6 +86,12 @@ interface AppActions {
 
   // Map actions
   setMapCenter: (center: [number, number]) => void;
+
+  // Destination actions
+  addRecentDestination: (destination: string) => void;
+  setSelectedDestination: (
+    destination: { name: string; lat: number; lng: number } | null
+  ) => void;
 }
 
 export const useAppStore = create<AppState & AppActions>()(
@@ -94,9 +102,11 @@ export const useAppStore = create<AppState & AppActions>()(
       trips: [],
       favoriteTrips: [],
       recentSearches: [],
+      recentDestinations: [],
       communityPosts: [],
       selectedTrip: null,
       mapCenter: [36.7538, 3.0588], // Algiers coordinates
+      selectedDestination: null,
       searchQuery: "",
       searchFilters: {
         transportModes: [],
@@ -161,6 +171,15 @@ export const useAppStore = create<AppState & AppActions>()(
         })),
 
       setMapCenter: (center) => set({ mapCenter: center }),
+      addRecentDestination: (destination) =>
+        set((state) => ({
+          recentDestinations: [
+            destination,
+            ...state.recentDestinations.filter((d) => d !== destination),
+          ].slice(0, 10),
+        })),
+      setSelectedDestination: (destination) =>
+        set({ selectedDestination: destination }),
     }),
     {
       name: "axe-web-storage",
@@ -169,6 +188,7 @@ export const useAppStore = create<AppState & AppActions>()(
         user: state.user,
         favoriteTrips: state.favoriteTrips,
         recentSearches: state.recentSearches,
+        recentDestinations: state.recentDestinations,
         searchFilters: state.searchFilters,
       }),
     }
