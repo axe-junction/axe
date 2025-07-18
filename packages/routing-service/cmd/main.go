@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/axe-junction/axe-server/internal/config"
+	"github.com/axe-junction/axe-server/internal/database"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -12,6 +13,13 @@ import (
 func main() {
 	_ = godotenv.Load()
 	cfg := config.Get()
+	db, err := database.Connect()
+	if err != nil {
+		panic(err)
+	}
+
+	_ = db
+
 	r := gin.Default()
 
 	publicAPI := r.Group("/auth")
