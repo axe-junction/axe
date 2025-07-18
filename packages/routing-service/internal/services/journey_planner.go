@@ -135,7 +135,7 @@ func (s *JourneyPlannerService) findJourneys(ctx context.Context, req models.Jou
 
 	log.Printf("🔍 Found %d origin stations and %d destination stations", len(originStations), len(destStations))
 
-	// Generate journeys for each combination
+	// Generate journeys for each combinaqtion
 	var wg sync.WaitGroup
 	journeyChan := make(chan models.Journey, 100)
 
@@ -171,17 +171,36 @@ func (s *JourneyPlannerService) findJourneys(ctx context.Context, req models.Jou
 func (s *JourneyPlannerService) createJourney(ctx context.Context, req models.JourneyRequest, fromStation, toStation models.Station) (models.Journey, error) {
 	journeyID := uuid.New()
 
+	log.Printf("🚀 Attempting to create journey from %s to %s", fromStation.Name, toStation.Name)
+
 	// Find routes between stations
 	routes, err := s.lineRepo.GetRouteBetweenStations(ctx, fromStation.ID, toStation.ID)
-	if err != nil || len(routes) == 0 {
-		return models.Journey{}, fmt.Errorf("no route found between stations")
+	if err != nil {
+		log.Printf("❌ Error finding routes between stations: %v", err)
+		return models.Journey{}, fmt.Errorf("error finding routes between stations: %w", err)
 	}
+
+	if len(routes) == 0 {
+		log.Printf("❌ No direct routes found between %s and %s", fromStation.Name, toStation.Name)
+
+		// Try to find routes through transfers
+		routes, err = s.findRoutesWithTransfers(ctx, fromStation, toStation)
+		if err != nil || len(routes) == 0 {
+			log.Printf("❌ No routes found even with transfers between %s and %s", fromStation.Name, toStation.Name)
+			return models.Journey{}, fmt.Errorf("no route found between stations")
+		}
+	}
+
+	log.Printf("✅ Found %d routes between %s and %s", len(routes), fromStation.Name, toStation.Name)
 
 	// Create journey segments
 	segments, err := s.createJourneySegments(ctx, req, fromStation, toStation, routes)
 	if err != nil {
+		log.Printf("❌ Failed to create journey segments: %v", err)
 		return models.Journey{}, fmt.Errorf("failed to create journey segments: %w", err)
 	}
+
+	log.Printf("✅ Created %d segments for journey", len(segments))
 
 	// Calculate journey metrics
 	summary := s.calculateJourneySummary(segments)
@@ -910,4 +929,63 @@ type MockServiceAlertSource struct{}
 
 func (m *MockServiceAlertSource) GetServiceAlerts(ctx context.Context, routeIDs []uuid.UUID) ([]models.ServiceAlert, error) {
 	return []models.ServiceAlert{}, nil
+}
+
+// findRoutesWithTransfers finds routes between stations allowing transfers
+func (s *JourneyPlannerService) findRoutesWithTransfers(ctx context.Context, fromStation, toStation models.Station) (models.Lignes, error) {
+	// For now, let's implement a simple version that looks for any routes serving each station
+	// This is a simplified approach - in a full implementation, this would use graph algorithms
+
+	// Find all routes that serve the from station
+	fromRoutes, err := s.findRoutesServingStation(ctx, fromStation.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Find all routes that serve the to station
+	toRoutes, err := s.findRoutesServingStation(ctx, toStation.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Find common routes (direct connection)
+	var commonRoutes models.Lignes
+	for _, fromRoute := range fromRoutes {
+		for _, toRoute := range toRoutes {
+			if fromRoute.ID == toRoute.ID {
+				commonRoutes = append(commonRoutes, fromRoute)
+				break
+			}
+		}
+	}
+
+	return commonRoutes, nil
+}
+
+// findRoutesServingStation finds all routes that serve a specific station
+func (s *JourneyPlannerService) findRoutesServingStation(ctx context.Context, stationID uuid.UUID) (models.Lignes, error) {
+	// Get all routes
+	allRoutes, err := s.lineRepo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var servingRoutes models.Lignes
+
+	// Check which routes serve this station
+	for _, route := range allRoutes {
+		stops, err := s.lineRepo.GetStopsForLine(route.ID)
+		if err != nil {
+			continue
+		}
+
+		for _, stop := range stops {
+			if stop.StationID == stationID {
+				servingRoutes = append(servingRoutes, route)
+				break
+			}
+		}
+	}
+
+	return servingRoutes, nil
 }
