@@ -1,7 +1,7 @@
 package repo
 
 import (
-	"fmt"
+	"math"
 
 	"github.com/axe-junction/axe-server/internal/models"
 	"gorm.io/gorm"
@@ -11,46 +11,36 @@ type StationRepo struct {
 	db *gorm.DB
 }
 
-func (stationRepo *StationRepo) GetAll() (models.Stations, error) {
-	var stations models.Stations
-	if err := stationRepo.db.Find(&stations).Error; err != nil {
-		return nil, err
-	}
-	return stations, nil
-}
-func (stationRepo *StationRepo) GetByID(id string) (models.Stations, error) {
-	var station models.Stations
-	if err := stationRepo.db.Find(&station, "id = ?", id).Error; err != nil {
-		return models.Stations{}, err
-	}
-	return station, nil
-}
-
-const earthRadius = 6371
-
-func (stationRepo *StationRepo) GetNearby(latitude, longitude float64) (models.Stations, error) {
-	var stations models.Stations
-
-	query := fmt.Sprintf(`
-		SELECT *, 
-		(%[1]d * acos(
-			cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) +
-			sin(radians(?)) * sin(radians(latitude))
-		)) AS distance
-		FROM stations
-		ORDER BY distance ASC
-		LIMIT 5;
-	`, earthRadius)
-
-	if err := stationRepo.db.Raw(query, latitude, longitude, latitude).Scan(&stations).Error; err != nil {
-		return nil, err
-	}
-
-	return stations, nil
-}
-
-// var _ models.StationRepo = (*StationRepo)(nil)
-
-func NewStationRepo(db *gorm.DB) models.StationRepo {
+func NewStationRepo(db *gorm.DB) *StationRepo {
 	return &StationRepo{db: db}
 }
+
+func (r *StationRepo) GetAll() ([]models.Station, error) {
+	var stations []models.Station
+	err := r.db.Find(&stations).Error
+	return stations, err
+}
+
+func (r *StationRepo) GetByID(id string) ([]models.Station, error) {
+	var station models.Station
+	err := r.db.Where("id = ?", id).First(&station).Error
+	if err != nil {
+		return nil, err
+	}
+	return []models.Station{station}, nil
+}
+
+func (r *StationRepo) GetNearby(lat, lng float64, radius int) ([]models.Station, error) {
+	// Calculate approximate bounding box
+	const kmPerDegree = 111.0
+	latDelta := float64(radius) / (kmPerDegree * 1000)
+	lngDelta := float64(radius) / (kmPerDegree * 1000 * math.Cos(lat*math.Pi/180))
+
+	var stations []models.Station
+	err := r.db.Where("latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?",
+		lat-latDelta, lat+latDelta, lng-lngDelta, lng+lngDelta).
+		Find(&stations).Error
+
+	return stations, err
+}
+
