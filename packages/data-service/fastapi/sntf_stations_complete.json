@@ -1,0 +1,919 @@
+{
+  "metadata": {
+    "source": "SNTF Schedule Images",
+    "extraction_date": "e8ba6bb8-aa14-48b0-bb56-581687f23f0b",
+    "total_stations": 39,
+    "lines": [
+      "Est",
+      "Ouest",
+      "Zeralda"
+    ]
+  },
+  "stations": [
+    {
+      "id": "ddd0bbc8-19c4-4845-b891-a34a13ba5016",
+      "name": "Alger",
+      "coordinates": {
+        "latitude": 36.7729333,
+        "longitude": 3.0588445
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "d4cf99ca-f85b-4897-a94a-1d54aa2d92d1",
+      "name": "Agha",
+      "coordinates": {
+        "latitude": 36.7667769,
+        "longitude": 3.0548471
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "1f0fd819-9c68-44b8-af23-29cb379e8b29",
+      "name": "Hussein Dey",
+      "coordinates": {
+        "latitude": 36.7429388,
+        "longitude": 3.094027
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "90097749-10f7-4af5-a7c4-0c728f54310a",
+      "name": "Caroubier",
+      "coordinates": {
+        "latitude": 36.8910895,
+        "longitude": 4.3980229
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "6df0230b-846e-4e32-8c83-e0be5dcb99a9",
+      "name": "El Harrach",
+      "coordinates": {
+        "latitude": 36.7207974,
+        "longitude": 3.1373893
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "dbf22140-88da-453a-b603-1f81e80585fb",
+      "name": "Bab Ezzouar",
+      "coordinates": {
+        "latitude": 36.7220068,
+        "longitude": 3.1856291
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "f9c5a65a-8db8-4f30-9312-e30e02f6f400",
+      "name": "Dar El Beida",
+      "coordinates": {
+        "latitude": 36.7149768,
+        "longitude": 3.2094611
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "a94e88d4-4a90-4d83-9476-e88b7f02bfd8",
+      "name": "Rouiba",
+      "coordinates": {
+        "latitude": 36.7364237,
+        "longitude": 3.2826417
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "3ca94c01-e867-4e31-8c10-19cbe5c37e10",
+      "name": "Reghaia",
+      "coordinates": {
+        "latitude": 36.7387813,
+        "longitude": 3.3421179
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "6672d538-f70e-411e-997e-9cadf7dd4195",
+      "name": "Reghaia Ind",
+      "coordinates": {
+        "latitude": 36.726804,
+        "longitude": 3.3080903
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "535450fb-852a-4ff9-ba0a-8563c986c9ff",
+      "name": "Birtouta",
+      "coordinates": {
+        "latitude": 36.6449884,
+        "longitude": 2.9985533
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "57266738-7617-43ef-ac33-e0d22d3d3296",
+      "name": "Corso",
+      "coordinates": {
+        "latitude": 36.7547423,
+        "longitude": 3.4433833
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "2f8dde41-72e5-4237-bcc4-871701cfc576",
+      "name": "Boumerdes",
+      "coordinates": {
+        "latitude": 36.7358032,
+        "longitude": 3.6163046
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "40fe946b-d9ff-4d7f-bfe9-854fc9045c1f",
+      "name": "Tidjelabine",
+      "coordinates": {
+        "latitude": 36.7321389,
+        "longitude": 3.4956358
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "58736e7c-37c0-4653-9acd-67b757937339",
+      "name": "Thenia",
+      "coordinates": {
+        "latitude": 36.724986,
+        "longitude": 3.556935
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "771a6ac8-b966-4125-95bd-3a3dbd440908",
+      "name": "Alger",
+      "coordinates": {
+        "latitude": 36.7729333,
+        "longitude": 3.0588445
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "2877c2d8-1c39-455a-92c1-b31cfecc21a8",
+      "name": "Agha",
+      "coordinates": {
+        "latitude": 36.7667769,
+        "longitude": 3.0548471
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "06ce57e3-33f8-4e06-a1e7-4e875226d6b2",
+      "name": "H.Dey",
+      "coordinates": {
+        "latitude": 36.7400223,
+        "longitude": 3.0964273
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "b99a784f-7141-4400-8b7f-1d1292bae792",
+      "name": "Caroubier",
+      "coordinates": {
+        "latitude": 36.8910895,
+        "longitude": 4.3980229
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "05897cd7-c822-433f-9ae4-920fee08c886",
+      "name": "El Harrach",
+      "coordinates": {
+        "latitude": 36.7207974,
+        "longitude": 3.1373893
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "9262ea52-5993-4437-8955-04c4bd3f3bd2",
+      "name": "Ain Naadja",
+      "coordinates": {
+        "latitude": 36.7024722,
+        "longitude": 3.0801951
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "7fedc667-b851-4475-8a32-eb5dbf50d22c",
+      "name": "Baba Ali",
+      "coordinates": {
+        "latitude": 36.6661975,
+        "longitude": 3.0510537
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "d0ec7dff-a7af-4ca1-b187-75259a23bdfa",
+      "name": "Birtouta",
+      "coordinates": {
+        "latitude": 36.6449884,
+        "longitude": 2.9985533
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "74375648-1260-4bd6-a6d8-27cd93e99213",
+      "name": "Tessala El Merdja",
+      "coordinates": {
+        "latitude": 36.6307193,
+        "longitude": 2.9455174
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "f6bf4a9a-7c87-479e-841f-5abde99ca363",
+      "name": "Sidi Mered",
+      "coordinates": {
+        "latitude": 36.5038282,
+        "longitude": 2.8452017
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "ca9ffad9-1c6b-4a24-b416-1ff963b10f76",
+      "name": "Boufarik",
+      "coordinates": {
+        "latitude": 36.5755523,
+        "longitude": 2.9128963
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "e20dbc89-b821-451d-ac8f-b227c8573ef1",
+      "name": "Blida",
+      "coordinates": {
+        "latitude": 36.4705658,
+        "longitude": 2.8274937
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "6b5499a7-74d8-401d-9d99-bda77c11ebd0",
+      "name": "Chiffa",
+      "coordinates": {
+        "latitude": 36.4622287,
+        "longitude": 2.7409097
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "3558a723-b819-4975-9faf-292e907ca054",
+      "name": "Mouzaia",
+      "coordinates": {
+        "latitude": 36.4674416,
+        "longitude": 2.6879953
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "7dbaf306-a037-4081-b188-84adde2951f9",
+      "name": "El Affroun",
+      "coordinates": {
+        "latitude": 36.46975,
+        "longitude": 2.6267421
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "511d5b14-cf6b-4609-a17b-d8c9ccc07fcb",
+      "name": "Agha",
+      "coordinates": {
+        "latitude": 36.7667769,
+        "longitude": 3.0548471
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "d4b2ce5c-bae7-4e62-82e6-007e1efeb860",
+      "name": "H.Dey",
+      "coordinates": {
+        "latitude": 36.7400223,
+        "longitude": 3.0964273
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "10fbc4e1-a6a1-4de4-9657-184e614f0f00",
+      "name": "Caroubier",
+      "coordinates": {
+        "latitude": 36.8910895,
+        "longitude": 4.3980229
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "3a1e6a99-2a48-477e-9d63-1348510ad7bd",
+      "name": "El Harrach",
+      "coordinates": {
+        "latitude": 36.7207974,
+        "longitude": 3.1373893
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "e6c25931-661d-4bcb-bdfd-01a39d5c6879",
+      "name": "Ain Naadja",
+      "coordinates": {
+        "latitude": 36.7024722,
+        "longitude": 3.0801951
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "492fae22-972f-4cb4-aa03-b43a6171bbd2",
+      "name": "Baba Ali",
+      "coordinates": {
+        "latitude": 36.6661975,
+        "longitude": 3.0510537
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "1c5f0282-5192-49bf-8b82-9d23829cade4",
+      "name": "Birtouta",
+      "coordinates": {
+        "latitude": 36.6449884,
+        "longitude": 2.9985533
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "e89dd908-b72e-4370-8255-6b9ac792cc4c",
+      "name": "Tessala El Merdja",
+      "coordinates": {
+        "latitude": 36.6307193,
+        "longitude": 2.9455174
+      },
+      "type": "train",
+      "region": "Algeria"
+    },
+    {
+      "id": "f41bdf81-becb-41dc-9e4b-e252fdd93ffa",
+      "name": "Zéralda",
+      "coordinates": {
+        "latitude": 36.7120392,
+        "longitude": 2.8407894
+      },
+      "type": "train",
+      "region": "Algeria"
+    }
+  ],
+  "raw_geocoded_data": {
+    "Est": [
+      {
+        "id": "ddd0bbc8-19c4-4845-b891-a34a13ba5016",
+        "name": "Alger",
+        "coordinates": {
+          "latitude": 36.7729333,
+          "longitude": 3.0588445
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Alger ⴷⵣⴰⵢⴻⵔ الجزائر, Alger-Centre, Daïra Sidi M'Hamed, Alger, 16007, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.6944852322442177,
+        "line": "Est"
+      },
+      {
+        "id": "d4cf99ca-f85b-4897-a94a-1d54aa2d92d1",
+        "name": "Agha",
+        "coordinates": {
+          "latitude": 36.7667769,
+          "longitude": 3.0548471
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Agha, ⵙⵉⴷⵉ ⵎⵃⴻⵎⵎⴻⴷ سيدي امحمد, Daïra Sidi M'Hamed, Alger, 16037, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.1467447661554894,
+        "line": "Est"
+      },
+      {
+        "id": "1f0fd819-9c68-44b8-af23-29cb379e8b29",
+        "name": "Hussein Dey",
+        "coordinates": {
+          "latitude": 36.7429388,
+          "longitude": 3.094027
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Hussein Dey ⵃⵓⵙⵉⵏ ⴷⴻⵢ حسين داي, Hussein Dey, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.43166584568821703,
+        "line": "Est"
+      },
+      {
+        "id": "90097749-10f7-4af5-a7c4-0c728f54310a",
+        "name": "Caroubier",
+        "coordinates": {
+          "latitude": 36.8910895,
+          "longitude": 4.3980229
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Caroubier, Azeffoun, Daïra Azeffoun, Tizi Ouzou, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.10671787365529867,
+        "line": "Est"
+      },
+      {
+        "id": "6df0230b-846e-4e32-8c83-e0be5dcb99a9",
+        "name": "El Harrach",
+        "coordinates": {
+          "latitude": 36.7207974,
+          "longitude": 3.1373893
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "El Harrach, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.45216722889077393,
+        "line": "Est"
+      },
+      {
+        "id": "dbf22140-88da-453a-b603-1f81e80585fb",
+        "name": "Bab Ezzouar",
+        "coordinates": {
+          "latitude": 36.7220068,
+          "longitude": 3.1856291
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Bab Ezzouar ⴱⴰⴱ ⵣⵡⴰⵔ باب الزوار, Dar el-Beïda, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.4264237659022629,
+        "line": "Est"
+      },
+      {
+        "id": "f9c5a65a-8db8-4f30-9312-e30e02f6f400",
+        "name": "Dar El Beida",
+        "coordinates": {
+          "latitude": 36.7149768,
+          "longitude": 3.2094611
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Dar El Beïda ⴷⴰⵔ ⵍⴱⴻⵢⴷⴰ الدار البيضاء, Dar el-Beïda, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.4340198297136339,
+        "line": "Est"
+      },
+      {
+        "id": "a94e88d4-4a90-4d83-9476-e88b7f02bfd8",
+        "name": "Rouiba",
+        "coordinates": {
+          "latitude": 36.7364237,
+          "longitude": 3.2826417
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Rouiba ⵔⵡⵉⴱⴰ الرويبة, Rouiba, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.42788079005192875,
+        "line": "Est"
+      },
+      {
+        "id": "3ca94c01-e867-4e31-8c10-19cbe5c37e10",
+        "name": "Reghaia",
+        "coordinates": {
+          "latitude": 36.7387813,
+          "longitude": 3.3421179
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Reghaïa ⵔⵖⴰⵢⴰ الرغاية, Rouiba, Alger, 16036, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.41025313428027543,
+        "line": "Est"
+      },
+      {
+        "id": "6672d538-f70e-411e-997e-9cadf7dd4195",
+        "name": "Reghaia Ind",
+        "coordinates": {
+          "latitude": 36.726804,
+          "longitude": 3.3080903
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Zone Industrielle de Rouiba-Reghaïa, Rouiba ⵔⵡⵉⴱⴰ الرويبة, Rouiba, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.1067156229495689,
+        "line": "Est"
+      },
+      {
+        "id": "535450fb-852a-4ff9-ba0a-8563c986c9ff",
+        "name": "Birtouta",
+        "coordinates": {
+          "latitude": 36.6449884,
+          "longitude": 2.9985533
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Birtouta ⴱⴻⵔⵜⵓⵜⴰ بئر توتة, Birtouta, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.4114668775904496,
+        "line": "Est"
+      },
+      {
+        "id": "57266738-7617-43ef-ac33-e0d22d3d3296",
+        "name": "Corso",
+        "coordinates": {
+          "latitude": 36.7547423,
+          "longitude": 3.4433833
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Corso ⵇⵓⵔⵚⵓ قورصو, Daïra Boumerdès, Boumerdès, 35014, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.3612918601149863,
+        "line": "Est"
+      },
+      {
+        "id": "2f8dde41-72e5-4237-bcc4-871701cfc576",
+        "name": "Boumerdes",
+        "coordinates": {
+          "latitude": 36.7358032,
+          "longitude": 3.6163046
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Boumerdès, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.5180439318315165,
+        "line": "Est"
+      },
+      {
+        "id": "40fe946b-d9ff-4d7f-bfe9-854fc9045c1f",
+        "name": "Tidjelabine",
+        "coordinates": {
+          "latitude": 36.7321389,
+          "longitude": 3.4956358
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Tidjelabine ⵜⵉⵊⴻⵍⵍⴰⴱⵉⵏ تيجلابين, Daïra Boumerdès, Boumerdès, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.37924734712974556,
+        "line": "Est"
+      },
+      {
+        "id": "58736e7c-37c0-4653-9acd-67b757937339",
+        "name": "Thenia",
+        "coordinates": {
+          "latitude": 36.724986,
+          "longitude": 3.556935
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Thenia ⵜⵏⵉⵢⴰ الثنية, Daïra Thenia, Boumerdès, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.42598888898580783,
+        "line": "Est"
+      }
+    ],
+    "Ouest": [
+      {
+        "id": "771a6ac8-b966-4125-95bd-3a3dbd440908",
+        "name": "Alger",
+        "coordinates": {
+          "latitude": 36.7729333,
+          "longitude": 3.0588445
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Alger ⴷⵣⴰⵢⴻⵔ الجزائر, Alger-Centre, Daïra Sidi M'Hamed, Alger, 16007, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.6944852322442177,
+        "line": "Ouest"
+      },
+      {
+        "id": "2877c2d8-1c39-455a-92c1-b31cfecc21a8",
+        "name": "Agha",
+        "coordinates": {
+          "latitude": 36.7667769,
+          "longitude": 3.0548471
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Agha, ⵙⵉⴷⵉ ⵎⵃⴻⵎⵎⴻⴷ سيدي امحمد, Daïra Sidi M'Hamed, Alger, 16037, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.1467447661554894,
+        "line": "Ouest"
+      },
+      {
+        "id": "06ce57e3-33f8-4e06-a1e7-4e875226d6b2",
+        "name": "H.Dey",
+        "coordinates": {
+          "latitude": 36.7400223,
+          "longitude": 3.0964273
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "CTC H-DEY, Hussein Dey ⵃⵓⵙⵉⵏ ⴷⴻⵢ حسين داي, Hussein Dey, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.1067447661554894,
+        "line": "Ouest"
+      },
+      {
+        "id": "b99a784f-7141-4400-8b7f-1d1292bae792",
+        "name": "Caroubier",
+        "coordinates": {
+          "latitude": 36.8910895,
+          "longitude": 4.3980229
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Caroubier, Azeffoun, Daïra Azeffoun, Tizi Ouzou, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.10671787365529867,
+        "line": "Ouest"
+      },
+      {
+        "id": "05897cd7-c822-433f-9ae4-920fee08c886",
+        "name": "El Harrach",
+        "coordinates": {
+          "latitude": 36.7207974,
+          "longitude": 3.1373893
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "El Harrach, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.45216722889077393,
+        "line": "Ouest"
+      },
+      {
+        "id": "9262ea52-5993-4437-8955-04c4bd3f3bd2",
+        "name": "Ain Naadja",
+        "coordinates": {
+          "latitude": 36.7024722,
+          "longitude": 3.0801951
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Djasr Kasentina ⴵⵙⴻⵔ ⴽⵙⴻⵏⵟⵉⵏⴰ جسر قسنطينة, Bir Mourad Raïs, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.41265819950201243,
+        "line": "Ouest"
+      },
+      {
+        "id": "7fedc667-b851-4475-8a32-eb5dbf50d22c",
+        "name": "Baba Ali",
+        "coordinates": {
+          "latitude": 36.6661975,
+          "longitude": 3.0510537
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Baba Ali, Saoula ⵙⴰⵡⵍⴰ سحاولة, Birtouta, Alger, 16096, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.24966150466089182,
+        "line": "Ouest"
+      },
+      {
+        "id": "d0ec7dff-a7af-4ca1-b187-75259a23bdfa",
+        "name": "Birtouta",
+        "coordinates": {
+          "latitude": 36.6449884,
+          "longitude": 2.9985533
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Birtouta ⴱⴻⵔⵜⵓⵜⴰ بئر توتة, Birtouta, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.4114668775904496,
+        "line": "Ouest"
+      },
+      {
+        "id": "74375648-1260-4bd6-a6d8-27cd93e99213",
+        "name": "Tessala El Merdja",
+        "coordinates": {
+          "latitude": 36.6307193,
+          "longitude": 2.9455174
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Tessala El Merdja ⵜⴰⵍⴰ ⵓⵎⵓⵔⴻⴵ تسالة المرجة, Birtouta, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.40539660383135884,
+        "line": "Ouest"
+      },
+      {
+        "id": "f6bf4a9a-7c87-479e-841f-5abde99ca363",
+        "name": "Sidi Mered",
+        "coordinates": {
+          "latitude": 36.5038282,
+          "longitude": 2.8452017
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "CEM Tahar Sidi Achour, RN 1, Khazrouna, Beni Mered ⴰⵢⵜ ⵎⴻⵔⴰⴷ بني مراد, Daïra Ouled Yaich, Blida, 09102, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 4.4248874647089605e-05,
+        "line": "Ouest"
+      },
+      {
+        "id": "ca9ffad9-1c6b-4a24-b416-1ff963b10f76",
+        "name": "Boufarik",
+        "coordinates": {
+          "latitude": 36.5755523,
+          "longitude": 2.9128963
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Boufarik ⴱⵓ ⴼⴰⵔⵉⴽ بوفاريك, Daïra Boufarik, Blida, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.43591790674419034,
+        "line": "Ouest"
+      },
+      {
+        "id": "e20dbc89-b821-451d-ac8f-b227c8573ef1",
+        "name": "Blida",
+        "coordinates": {
+          "latitude": 36.4705658,
+          "longitude": 2.8274937
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Blida ⵍⴻⴱⵍⵉⴸⴰ البليدة, Daïra Blida, Blida, 09000, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.5385664204705034,
+        "line": "Ouest"
+      },
+      {
+        "id": "6b5499a7-74d8-401d-9d99-bda77c11ebd0",
+        "name": "Chiffa",
+        "coordinates": {
+          "latitude": 36.4622287,
+          "longitude": 2.7409097
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Chiffa ⵛⵛⵉⴼⴻⵝ الشفة, Daïra Mouzaia, Blida, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.3701707379334754,
+        "line": "Ouest"
+      },
+      {
+        "id": "3558a723-b819-4975-9faf-292e907ca054",
+        "name": "Mouzaia",
+        "coordinates": {
+          "latitude": 36.4674416,
+          "longitude": 2.6879953
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Mouzaia ⵎⵓⵣⴰⵢⴰ موزاية, Daïra Mouzaia, Blida, 09210, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.4001443537531595,
+        "line": "Ouest"
+      },
+      {
+        "id": "7dbaf306-a037-4081-b188-84adde2951f9",
+        "name": "El Affroun",
+        "coordinates": {
+          "latitude": 36.46975,
+          "longitude": 2.6267421
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "El Affroun ⵍⵄⴻⴼⵕⵓⵏ العفرون, Daïra El Affroun, Blida, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.37942724125570976,
+        "line": "Ouest"
+      }
+    ],
+    "Zeralda": [
+      {
+        "id": "511d5b14-cf6b-4609-a17b-d8c9ccc07fcb",
+        "name": "Agha",
+        "coordinates": {
+          "latitude": 36.7667769,
+          "longitude": 3.0548471
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Agha, ⵙⵉⴷⵉ ⵎⵃⴻⵎⵎⴻⴷ سيدي امحمد, Daïra Sidi M'Hamed, Alger, 16037, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.1467447661554894,
+        "line": "Zeralda"
+      },
+      {
+        "id": "d4b2ce5c-bae7-4e62-82e6-007e1efeb860",
+        "name": "H.Dey",
+        "coordinates": {
+          "latitude": 36.7400223,
+          "longitude": 3.0964273
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "CTC H-DEY, Hussein Dey ⵃⵓⵙⵉⵏ ⴷⴻⵢ حسين داي, Hussein Dey, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.1067447661554894,
+        "line": "Zeralda"
+      },
+      {
+        "id": "10fbc4e1-a6a1-4de4-9657-184e614f0f00",
+        "name": "Caroubier",
+        "coordinates": {
+          "latitude": 36.8910895,
+          "longitude": 4.3980229
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Caroubier, Azeffoun, Daïra Azeffoun, Tizi Ouzou, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.10671787365529867,
+        "line": "Zeralda"
+      },
+      {
+        "id": "3a1e6a99-2a48-477e-9d63-1348510ad7bd",
+        "name": "El Harrach",
+        "coordinates": {
+          "latitude": 36.7207974,
+          "longitude": 3.1373893
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "El Harrach, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.45216722889077393,
+        "line": "Zeralda"
+      },
+      {
+        "id": "e6c25931-661d-4bcb-bdfd-01a39d5c6879",
+        "name": "Ain Naadja",
+        "coordinates": {
+          "latitude": 36.7024722,
+          "longitude": 3.0801951
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Djasr Kasentina ⴵⵙⴻⵔ ⴽⵙⴻⵏⵟⵉⵏⴰ جسر قسنطينة, Bir Mourad Raïs, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.41265819950201243,
+        "line": "Zeralda"
+      },
+      {
+        "id": "492fae22-972f-4cb4-aa03-b43a6171bbd2",
+        "name": "Baba Ali",
+        "coordinates": {
+          "latitude": 36.6661975,
+          "longitude": 3.0510537
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Baba Ali, Saoula ⵙⴰⵡⵍⴰ سحاولة, Birtouta, Alger, 16096, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.24966150466089182,
+        "line": "Zeralda"
+      },
+      {
+        "id": "1c5f0282-5192-49bf-8b82-9d23829cade4",
+        "name": "Birtouta",
+        "coordinates": {
+          "latitude": 36.6449884,
+          "longitude": 2.9985533
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Birtouta ⴱⴻⵔⵜⵓⵜⴰ بئر توتة, Birtouta, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.4114668775904496,
+        "line": "Zeralda"
+      },
+      {
+        "id": "e89dd908-b72e-4370-8255-6b9ac792cc4c",
+        "name": "Tessala El Merdja",
+        "coordinates": {
+          "latitude": 36.6307193,
+          "longitude": 2.9455174
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Tessala El Merdja ⵜⴰⵍⴰ ⵓⵎⵓⵔⴻⴵ تسالة المرجة, Birtouta, Alger, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.40539660383135884,
+        "line": "Zeralda"
+      },
+      {
+        "id": "f41bdf81-becb-41dc-9e4b-e252fdd93ffa",
+        "name": "Zéralda",
+        "coordinates": {
+          "latitude": 36.7120392,
+          "longitude": 2.8407894
+        },
+        "type": "train",
+        "region": "Algeria",
+        "display_name": "Zéralda, Zeralda ⵣⵉⵔⴰⵍⴷⴰ زرالدة, Alger, 16063, Algérie ⵍⵣⵣⴰⵢⴻⵔ الجزائر",
+        "confidence": 0.42249228830867114,
+        "line": "Zeralda"
+      }
+    ]
+  }
+}

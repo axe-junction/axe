@@ -19,13 +19,6 @@ app = FastAPI(
     title="User Management API",
     description="API for managing users with Prisma and FastAPI",
     version="1.0.0",
-    openapi_url="/openapi.json",
-    openapi_tags=[
-        {
-            "name": "Users",
-            "description": "Operations with users"
-        }
-    ],
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
