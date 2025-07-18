@@ -50,13 +50,29 @@ type OSRMResponse struct {
 		Geometry struct {
 			Coordinates [][]float64 `json:"coordinates"`
 		} `json:"geometry"`
+		Legs []struct {
+			Distance float64 `json:"distance"`
+			Duration float64 `json:"duration"`
+			Summary  string  `json:"summary"`
+			Steps    []struct {
+				Distance    float64 `json:"distance"`
+				Duration    float64 `json:"duration"`
+				Instruction string  `json:"instruction"`
+				Name        string  `json:"name"`
+				Maneuver    struct {
+					Type     string    `json:"type"`
+					Modifier string    `json:"modifier"`
+					Location []float64 `json:"location"`
+				} `json:"maneuver"`
+			} `json:"steps"`
+		} `json:"legs"`
 	} `json:"routes"`
 }
 
 type StationRepo interface {
 	GetAll() ([]Station, error)
 	GetByID(id string) ([]Station, error)
-	GetNearby(lat, lng float64, radius int) ([]Station, error)
+	GetNearby(lat, lng float64, radius ...int) ([]Station, error)
 }
 
 type LineRepo interface {
@@ -65,6 +81,10 @@ type LineRepo interface {
 	GetByType(typee string) (Lines, error)
 	GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (Lines, error)
 	GetStopsForLine(lineID uuid.UUID) ([]Stop, error)
+}
+
+type OSRMRepo interface {
+	GetRouteBetween(ctx context.Context, fromLng, fromLat, toLng, toLat float64, profile string) (*OSRMResponse, error)
 }
 
 type RouteSegment struct {
