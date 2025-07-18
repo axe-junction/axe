@@ -5,12 +5,32 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = "postgresql://example_user:example_password@localhost:5436/example_db"
 }
 
-model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
+model Station {
+  id        String   @id @default(uuid())
+  name      String
+  latitude  Float
+  longitude Float
+  type      String
+
+  stops     Stop[]   @relation("StationStops")
+}
+model Ligne {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+
+  stops     Stop[]   @relation("RouteStops")
+}
+model Stop {
+  id         String   @id @default(uuid())
+  routeId    String
+  stationId  String
+  sequence   Int
+
+  route      Ligne    @relation("RouteStops", fields: [routeId], references: [id])
+  station    Station  @relation("StationStops", fields: [stationId], references: [id])
 }
