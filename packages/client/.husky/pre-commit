@@ -1,0 +1,24 @@
+#!/bin/sh
+
+echo "Running pre-commit hook"
+
+# Run prettier
+echo "🎨 Running prettier"
+npx prettier --check domain/* app/* presentation/*
+
+if [ $? -ne 0 ]; then 
+    echo "Prettier failed 🔴, please run 'pnpm run format' and commit again"
+    exit 1
+fi
+
+# Run eslint
+echo "🔍 Running eslint"
+npx eslint . --fix
+if [ $? -ne 0 ]; then 
+    echo "Eslint failed 🔴, please fix linting issues. and commit again"
+    exit 1
+fi
+
+echo "✅ All checks passed"
+
+
