@@ -469,14 +469,17 @@ export default function MapView() {
     }
   };
 
-  const generateRouteForOption = async (option: RouteOption, destination: Destination) => {
+  const generateRouteForOption = async (
+    option: RouteOption,
+    destination: Destination
+  ) => {
     if (!currentPosition) return;
 
     setIsCalculatingRoute(true);
 
     try {
       let routePath: { lat: number; lng: number }[] = [];
-      
+
       // Generate different routes based on transport mode
       if (option.id === "metro-walk") {
         // Route via metro stations
@@ -488,7 +491,7 @@ export default function MapView() {
           currentPosition,
           metroStations[0],
           metroStations[1],
-          { lat: destination.lat, lng: destination.lng }
+          { lat: destination.lat, lng: destination.lng },
         ];
       } else if (option.id === "tram-walk") {
         // Route via tram lines
@@ -500,33 +503,49 @@ export default function MapView() {
           currentPosition,
           tramStations[0],
           tramStations[1],
-          { lat: destination.lat, lng: destination.lng }
+          { lat: destination.lat, lng: destination.lng },
         ];
       } else if (option.id === "bus") {
         // Direct bus route with fewer stops
         const busStops = [
-          { 
-            lat: currentPosition.lat + (destination.lat - currentPosition.lat) * 0.3,
-            lng: currentPosition.lng + (destination.lng - currentPosition.lng) * 0.3
+          {
+            lat:
+              currentPosition.lat +
+              (destination.lat - currentPosition.lat) * 0.3,
+            lng:
+              currentPosition.lng +
+              (destination.lng - currentPosition.lng) * 0.3,
           },
-          { 
-            lat: currentPosition.lat + (destination.lat - currentPosition.lat) * 0.7,
-            lng: currentPosition.lng + (destination.lng - currentPosition.lng) * 0.7
-          }
+          {
+            lat:
+              currentPosition.lat +
+              (destination.lat - currentPosition.lat) * 0.7,
+            lng:
+              currentPosition.lng +
+              (destination.lng - currentPosition.lng) * 0.7,
+          },
         ];
-        routePath = [currentPosition, ...busStops, { lat: destination.lat, lng: destination.lng }];
+        routePath = [
+          currentPosition,
+          ...busStops,
+          { lat: destination.lat, lng: destination.lng },
+        ];
       } else if (option.id === "combined") {
         // Bus + Metro combination
         const transferPoint = { lat: 36.7403, lng: 3.0508 }; // Tafourah transfer
         const busStop = {
-          lat: currentPosition.lat + (transferPoint.lat - currentPosition.lat) * 0.5,
-          lng: currentPosition.lng + (transferPoint.lng - currentPosition.lng) * 0.5
+          lat:
+            currentPosition.lat +
+            (transferPoint.lat - currentPosition.lat) * 0.5,
+          lng:
+            currentPosition.lng +
+            (transferPoint.lng - currentPosition.lng) * 0.5,
         };
         routePath = [
           currentPosition,
           busStop,
           transferPoint,
-          { lat: destination.lat, lng: destination.lng }
+          { lat: destination.lat, lng: destination.lng },
         ];
       } else if (option.id === "airport-express") {
         // Direct highway route to airport
@@ -534,15 +553,19 @@ export default function MapView() {
         routePath = [
           currentPosition,
           highwayPoint,
-          { lat: destination.lat, lng: destination.lng }
+          { lat: destination.lat, lng: destination.lng },
         ];
       } else if (option.id === "walking") {
         // Walking route - more direct path
         const midPoint = {
           lat: (currentPosition.lat + destination.lat) / 2,
-          lng: (currentPosition.lng + destination.lng) / 2
+          lng: (currentPosition.lng + destination.lng) / 2,
         };
-        routePath = [currentPosition, midPoint, { lat: destination.lat, lng: destination.lng }];
+        routePath = [
+          currentPosition,
+          midPoint,
+          { lat: destination.lat, lng: destination.lng },
+        ];
       } else {
         // Fallback to original routing service
         const route = await routingService.calculateRoute(currentPosition, {
@@ -564,7 +587,7 @@ export default function MapView() {
       setRouteData(routeData);
     } catch (error) {
       console.error("Failed to calculate route:", error);
-      
+
       // Create a simple fallback route specific to the option
       const fallbackRoute: RouteData = {
         from: currentPosition,
@@ -583,7 +606,7 @@ export default function MapView() {
 
   const handleRouteOptionSelect = (option: RouteOption) => {
     setSelectedRouteOption(option);
-    
+
     // Generate new route for the selected option
     if (selectedDestination) {
       generateRouteForOption(option, selectedDestination);

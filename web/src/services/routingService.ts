@@ -42,16 +42,23 @@ export class RoutingService {
   async calculateRouteForTransport(
     start: RoutePoint,
     end: RoutePoint,
-    transportType: "metro" | "tram" | "bus" | "walking" | "combined" | "airport" = "bus"
+    transportType:
+      | "metro"
+      | "tram"
+      | "bus"
+      | "walking"
+      | "combined"
+      | "airport" = "bus"
   ): Promise<RouteResponse> {
     try {
       // Use different routing profiles based on transport type
-      let profile: "driving-car" | "foot-walking" | "cycling-regular" = "driving-car";
-      
+      let profile: "driving-car" | "foot-walking" | "cycling-regular" =
+        "driving-car";
+
       if (transportType === "walking") {
         profile = "foot-walking";
       }
-      
+
       const osrmResponse = await this.callOSRMAPI(start, end, profile);
       return osrmResponse;
     } catch (error) {
@@ -188,8 +195,8 @@ export class RoutingService {
         { lat: 36.7697, lng: 3.0611 }, // Port
       ],
       bus: [
-        { lat: 36.7600, lng: 3.0500 }, // Central bus stops
-        { lat: 36.7400, lng: 3.0600 },
+        { lat: 36.76, lng: 3.05 }, // Central bus stops
+        { lat: 36.74, lng: 3.06 },
       ],
       walking: [], // Direct path for walking
       combined: [
@@ -197,11 +204,11 @@ export class RoutingService {
       ],
       airport: [
         { lat: 36.7, lng: 3.15 }, // Highway junction
-      ]
+      ],
     };
 
     const waypoints = transportWaypoints[transportType];
-    
+
     // Add relevant waypoints based on transport type
     if (waypoints.length > 0) {
       // Find the closest waypoint to start
@@ -210,18 +217,22 @@ export class RoutingService {
         const closestDist = this.calculateDistance(start, closest);
         return distToStart < closestDist ? waypoint : closest;
       });
-      
+
       path.push(closestToStart);
-      
+
       // Add waypoints that make sense for the route
-      waypoints.forEach(waypoint => {
+      waypoints.forEach((waypoint) => {
         const distToEnd = this.calculateDistance(waypoint, end);
         const distFromStart = this.calculateDistance(start, waypoint);
-        
+
         // Add waypoint if it's reasonably on the way
-        if (distToEnd < this.calculateDistance(start, end) && 
-            distFromStart < this.calculateDistance(start, end)) {
-          if (!path.some(p => p.lat === waypoint.lat && p.lng === waypoint.lng)) {
+        if (
+          distToEnd < this.calculateDistance(start, end) &&
+          distFromStart < this.calculateDistance(start, end)
+        ) {
+          if (
+            !path.some((p) => p.lat === waypoint.lat && p.lng === waypoint.lng)
+          ) {
             path.push(waypoint);
           }
         }
@@ -356,14 +367,17 @@ export class RoutingService {
     return Math.round((distance / effectiveSpeed) * 60); // Convert to minutes
   }
 
-  private estimateTransportDuration(distance: number, transportType: string): number {
+  private estimateTransportDuration(
+    distance: number,
+    transportType: string
+  ): number {
     const speeds = {
-      metro: 35,     // km/h including stops
-      tram: 20,      // km/h including stops  
-      bus: 15,       // km/h in city traffic
-      walking: 5,    // km/h
-      combined: 25,  // Average of bus + metro
-      airport: 45,   // Highway speed
+      metro: 35, // km/h including stops
+      tram: 20, // km/h including stops
+      bus: 15, // km/h in city traffic
+      walking: 5, // km/h
+      combined: 25, // Average of bus + metro
+      airport: 45, // Highway speed
     };
 
     const speed = speeds[transportType as keyof typeof speeds] || 20;
@@ -400,7 +414,10 @@ export class RoutingService {
     return instructions;
   }
 
-  private generateTransportInstructions(path: RoutePoint[], transportType: string): string[] {
+  private generateTransportInstructions(
+    path: RoutePoint[],
+    transportType: string
+  ): string[] {
     const instructions: string[] = [];
 
     const transportInstructions = {
@@ -409,45 +426,48 @@ export class RoutingService {
         "Take Metro Line 1",
         "Transfer if needed",
         "Exit at destination station",
-        "Walk to final destination"
+        "Walk to final destination",
       ],
       tram: [
         "Walk to tram stop",
         "Board the tram",
         "Stay on tram until destination stop",
         "Exit tram",
-        "Walk to final destination"
+        "Walk to final destination",
       ],
       bus: [
         "Walk to bus stop",
         "Board the bus",
         "Stay on bus until destination",
         "Exit bus",
-        "Walk to final destination"
+        "Walk to final destination",
       ],
       walking: [
         "Head towards destination",
         "Continue straight",
         "Turn as needed",
-        "You have arrived"
+        "You have arrived",
       ],
       combined: [
         "Walk to bus stop",
         "Take bus to transfer point",
         "Transfer to metro",
         "Take metro to destination area",
-        "Walk to final destination"
+        "Walk to final destination",
       ],
       airport: [
         "Walk to shuttle stop",
         "Board airport express",
         "Direct route to airport",
-        "Arrive at terminal"
-      ]
+        "Arrive at terminal",
+      ],
     };
 
-    return transportInstructions[transportType as keyof typeof transportInstructions] || 
-           ["Head towards your destination", "You have arrived"];
+    return (
+      transportInstructions[
+        transportType as keyof typeof transportInstructions
+      ] || ["Head towards your destination", "You have arrived"]
+    );
   }
 
   private getBearing(start: RoutePoint, end: RoutePoint): number {
