@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 0;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        .btn-google {
+            background-color: #4285f4;
+            color: white;
+        }
+        .btn-google:hover {
+            background-color: #357ae8;
+        }
+        .btn-logout {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-profile {
+            background-color: #28a745;
+            color: white;
+        }
+        .user-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google OAuth Test</h1>
+        
+        <div id="login-section">
+            <h2>Login</h2>
+            <p>Click the button below to login with Google:</p>
+            <a href="/auth/google" class="btn btn-google">Login with Google</a>
+        </div>
+
+        <div id="user-section" class="hidden">
+            <h2>User Dashboard</h2>
+            <button onclick="getProfile()" class="btn btn-profile">Get Profile</button>
+            <button onclick="logout()" class="btn btn-logout">Logout</button>
+            
+            <div id="user-info"></div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in when page loads
+        window.onload = function() {
+            getProfile();
+        };
+
+        function getProfile() {
+            fetch('/api/profile')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.user) {
+                        showUserInfo(data.user);
+                    } else {
+                        showLogin();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showLogin();
+                });
+        }
+
+        function logout() {
+            fetch('/auth/logout', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Logged out:', data);
+                    showLogin();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function showUserInfo(user) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('user-section').classList.remove('hidden');
+            
+            document.getElementById('user-info').innerHTML = `
+                <div class="user-info">
+                    <h3>User Information</h3>
+                    <p><strong>Name:</strong> ${user.name}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>Google ID:</strong> ${user.google_id}</p>
+                    <p><strong>Verified Email:</strong> ${user.verified_email ? 'Yes' : 'No'}</p>
+                    ${user.picture ? `<img src="${user.picture}" alt="Profile Picture" style="border-radius: 50%; width: 60px; height: 60px;">` : ''}
+                </div>
+            `;
+        }
+
+        function showLogin() {
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('user-section').classList.add('hidden');
+            document.getElementById('user-info').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
