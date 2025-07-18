@@ -18,7 +18,6 @@ func RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Store user ID in context for use in handlers
 		c.Set("user_id", userID)
 		c.Next()
 	}

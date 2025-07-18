@@ -28,22 +28,18 @@ func NewOAuthHandler(cfg *config.Env, userRepo *repo.UserRepository) *OAuthHandl
 }
 
 func (h *OAuthHandler) GoogleLogin(c *gin.Context) {
-	// Generate a random state string
 	state, err := generateRandomState()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate state"})
 		return
 	}
 
-	// Store state in session
 	session := sessions.Default(c)
 	session.Set("oauth_state", state)
 	session.Save()
 
-	// Get the authorization URL
 	authURL := h.oauthService.GetAuthURL(state)
 
-	// Redirect to Google OAuth
 	c.Redirect(http.StatusTemporaryRedirect, authURL)
 }
 
