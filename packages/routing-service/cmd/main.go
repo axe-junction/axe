@@ -56,13 +56,16 @@ func main() {
 	stationRepo := repo.NewStationRepo(db)
 	osrmRepo := repo.NewOSRMRepo("https://osrm.walidbechar.dev")
 
-	routingService := services.NewRoutingService(stationRepo, lineRepo, *osrmRepo)
+	// Create a legacy wrapper for routing service
+	legacyLineRepo := repo.NewLegacyLineRepoWrapper(db)
+	routingService := services.NewRoutingService(stationRepo, legacyLineRepo, *osrmRepo)
+	journeyPlannerService := services.NewJourneyPlannerService(stationRepo, lineRepo, osrmRepo)
 
 	log.Println("Waiting for transport graph to initialize...")
 	time.Sleep(10 * time.Second)
 
 	oauthHandler := handlers.NewOAuthHandler(cfg, userRepo)
-	routingHandler := handlers.NewRoutingHandler(routingService)
+	routingHandler := handlers.NewRoutingHandler(routingService, journeyPlannerService)
 	lineService := services.NewLineService(lineRepo)
 	stationService := services.NewStationService(stationRepo)
 

@@ -7,17 +7,19 @@ import (
 )
 
 type Ligne struct {
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Name   string
-	Type   string
-	Agency string // "ETUSA", "SNTF", etc.
+	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Name     string
+	Type     string
+	Agency   string    // "ETUSA", "SNTF", etc.
+	Stations []Station `gorm:"many2many:ligne_stations;"`
 }
 
 type Lignes []Ligne
 
 type LigneRepo interface {
-	GetAll() (Lines, error)
-	GetByID(id uuid.UUID) (Line, error)
-	GetByType(typee string) (Lines, error)
-	GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (Lines, error)
+	GetAll() (Lignes, error)
+	GetByID(id uuid.UUID) (Ligne, error)
+	GetByType(typee string) (Lignes, error)
+	GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (Lignes, error)
+	GetStopsForLine(lineID uuid.UUID) ([]Stop, error)
 }
