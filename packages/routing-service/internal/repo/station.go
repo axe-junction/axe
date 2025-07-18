@@ -30,11 +30,17 @@ func (r *StationRepo) GetByID(id string) ([]models.Station, error) {
 	return []models.Station{station}, nil
 }
 
-func (r *StationRepo) GetNearby(lat, lng float64, radius int) ([]models.Station, error) {
+func (r *StationRepo) GetNearby(lat, lng float64, radius ...int) ([]models.Station, error) {
+	// Use default radius of 1000m if not specified
+	searchRadius := 1000
+	if len(radius) > 0 {
+		searchRadius = radius[0]
+	}
+
 	// Calculate approximate bounding box
 	const kmPerDegree = 111.0
-	latDelta := float64(radius) / (kmPerDegree * 1000)
-	lngDelta := float64(radius) / (kmPerDegree * 1000 * math.Cos(lat*math.Pi/180))
+	latDelta := float64(searchRadius) / (kmPerDegree * 1000)
+	lngDelta := float64(searchRadius) / (kmPerDegree * 1000 * math.Cos(lat*math.Pi/180))
 
 	var stations []models.Station
 	err := r.db.Where("latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?",
@@ -43,4 +49,3 @@ func (r *StationRepo) GetNearby(lat, lng float64, radius int) ([]models.Station,
 
 	return stations, err
 }
-
