@@ -1,6 +1,6 @@
 package models
 
-type stations struct{
+type Station struct{
 	ID        string `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
 	Name      string `json:"name"`
 	Latitude  float64 `json:"latitude"`
@@ -8,9 +8,9 @@ type stations struct{
 	Type 	string `json:"type"`
 }
 
-type Stations []stations
+type Stations []Station
 
 type StationRepo interface{
 	GetAll() (Stations, error)
-	GetByID(id string) (stations, error)
+	GetByID(id string) (Stations, error)
 }
