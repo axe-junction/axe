@@ -15,18 +15,18 @@ func NewLineService(repo models.LigneRepo) *LineService {
 	return &LineService{repo: repo}
 }
 
-func (s *LineService) GetAllLignes() (models.Lines, error) {
+func (s *LineService) GetAllLignes() (models.Lignes, error) {
 	return s.repo.GetAll()
 }
 
-func (s *LineService) GetLigneByID(id uuid.UUID) (models.Line, error) {
+func (s *LineService) GetLigneByID(id uuid.UUID) (models.Ligne, error) {
 	return s.repo.GetByID(id)
 }
 
-func (s *LineService) GetLignesByType(typee string) (models.Lines, error) {
+func (s *LineService) GetLignesByType(typee string) (models.Lignes, error) {
 	return s.repo.GetByType(typee)
 }
 
-func (s *LineService) GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (models.Lines, error) {
+func (s *LineService) GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (models.Lignes, error) {
 	return s.repo.GetRouteBetweenStations(ctx, startID, endID)
 }
