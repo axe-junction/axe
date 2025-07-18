@@ -19,5 +19,5 @@ func (s *StationService) GetStationByID(id string) (models.Stations, error) {
 }
 
 func (s *StationService) GetNearbyStations(lat, lng float64) (models.Stations, error) {
-	return s.repo.GetNearby(lat, lng)
+	return s.repo.GetNearby(lat, lng, 6371000)
 }
