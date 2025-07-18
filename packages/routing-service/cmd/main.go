@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/axe-junction/axe-server/internal/config"
 	"github.com/axe-junction/axe-server/internal/database"
@@ -29,48 +30,41 @@ func main() {
 	err = db.AutoMigrate(
 		&models.User{},
 		&models.Station{},
-		&models.Ligne{},
+		&models.Line{},
 		&models.Stop{},
+		&models.Transfer{},
 	)
 	if err != nil {
 		log.Printf("Failed to migrate database: %v", err)
 		panic(err)
 	}
 
-	// Enable UUID extension for PostgreSQL
 	db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 
-	// Seed database only if tables are empty
-	var count int64
-	db.Model(&models.Station{}).Count(&count)
-	if count == 0 {
+	var stationCount int64
+	db.Model(&models.Station{}).Count(&stationCount)
+	if stationCount == 0 {
 		if err := database.Seed(db); err != nil {
 			log.Printf("Failed to seed database: %v", err)
 		}
 	} else {
-		log.Printf("Database already has %d stations, skipping seeding", count)
-		// Let's also check stops
-		var stopCount int64
-		db.Model(&models.Stop{}).Count(&stopCount)
-		log.Printf("Database has %d stops", stopCount)
-
-		// If we have stations but no stops, something went wrong - clean and reseed
-		if stopCount == 0 {
-			log.Println("⚠️ Found stations but no stops! Cleaning and reseeding...")
-			db.Exec("TRUNCATE TABLE stations, lignes, stops RESTART IDENTITY CASCADE;")
-			if err := database.Seed(db); err != nil {
-				log.Printf("Failed to reseed database: %v", err)
-			}
-		}
+		log.Printf("Database already has %d stations, skipping seeding", stationCount)
 	}
 
 	userRepo := repo.NewUserRepository(db)
+	lineRepo := repo.NewLineRepo(db)
+	stationRepo := repo.NewStationRepo(db)
+	osrmRepo := repo.NewOSRMRepo("https://osrm.walidbechar.dev")
+
+	routingService := services.NewRoutingService(stationRepo, lineRepo, *osrmRepo)
+
+	log.Println("Waiting for transport graph to initialize...")
+	time.Sleep(10 * time.Second)
 
 	oauthHandler := handlers.NewOAuthHandler(cfg, userRepo)
-	ligneRepo := repo.NewLigneRepo(db)
-	stationRepo := repo.NewStationRepo(db)
-	routingService := services.NewRoutingService(stationRepo, ligneRepo)
 	routingHandler := handlers.NewRoutingHandler(routingService)
+	lineService := services.NewLineService(lineRepo)
+	stationService := services.NewStationService(stationRepo)
 
 	r := gin.Default()
 
@@ -82,12 +76,12 @@ func main() {
 	r.GET("/test", func(c *gin.Context) {
 		c.File("./static/test-routing.html")
 	})
+
 	routingAPI := r.Group("/routing")
 	{
 		routingAPI.GET("/best", routingHandler.GetBestRoute)
 	}
 
-	stationService := services.NewStationService(stationRepo)
 	r.GET("/api/stations", func(c *gin.Context) {
 		stations, err := stationService.GetAllStations()
 		if err != nil {
@@ -97,58 +91,30 @@ func main() {
 		c.JSON(http.StatusOK, stations)
 	})
 
-	// Debug endpoint to check database state
 	r.GET("/debug/db", func(c *gin.Context) {
 		var stations []models.Station
-		var routes []models.Ligne
+		var lines []models.Line
 		var stops []models.Stop
+		var transfers []models.Transfer
 
 		db.Find(&stations)
-		db.Preload("Stops").Preload("Stations").Find(&routes)
-		db.Preload("Route").Preload("Station").Find(&stops)
+		db.Preload("Stops").Find(&lines)
+		db.Find(&stops)
+		db.Find(&transfers)
 
 		c.JSON(http.StatusOK, gin.H{
-			"stations": stations,
-			"routes":   routes,
-			"stops":    stops,
-		})
-	})
-
-	r.GET("/debug/route-test/:startStation/:endStation", func(c *gin.Context) {
-		startStationName := c.Param("startStation")
-		endStationName := c.Param("endStation")
-
-		var startStation, endStation models.Station
-		if err := db.Where("name = ?", startStationName).First(&startStation).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Start station not found"})
-			return
-		}
-		if err := db.Where("name = ?", endStationName).First(&endStation).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "End station not found"})
-			return
-		}
-
-		var routes []models.Ligne
-		query := `
-			SELECT DISTINCT l.* FROM lignes l
-			JOIN stops s1 ON l.id = s1.route_id AND s1.station_id = ?
-			JOIN stops s2 ON l.id = s2.route_id AND s2.station_id = ?
-			WHERE s1.sequence < s2.sequence
-		`
-		db.Raw(query, startStation.ID, endStation.ID).Scan(&routes)
-
-		c.JSON(http.StatusOK, gin.H{
-			"startStation": startStation,
-			"endStation":   endStation,
-			"routes":       routes,
-			"query":        query,
+			"stations":  stations,
+			"lines":     lines,
+			"stops":     stops,
+			"transfers": transfers,
 		})
 	})
 
 	r.POST("/debug/reseed", func(c *gin.Context) {
 		log.Println("🔄 Manual reseed requested...")
+		db.Exec("DELETE FROM transfers")
 		db.Exec("DELETE FROM stops")
-		db.Exec("DELETE FROM lignes")
+		db.Exec("DELETE FROM lines")
 		db.Exec("DELETE FROM stations")
 
 		if err := database.Seed(db); err != nil {
@@ -174,11 +140,22 @@ func main() {
 		protectedAPI.GET("/profile", oauthHandler.GetProfile)
 	}
 
+	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status":  "ok",
-			"message": "Irtiqaa Academy API is running",
+			"message": "Algiers Transit API is running",
 		})
+	})
+
+	// Line API
+	r.GET("/api/lines", func(c *gin.Context) {
+		lines, err := lineService.GetAllLignes()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, lines)
 	})
 
 	log.Printf("Server starting on port %d", cfg.PORT)

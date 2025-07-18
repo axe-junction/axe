@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllLignesHandler(ligneService services.LigneService) gin.HandlerFunc {
+func GetAllLignesHandler(ligneService services.LineService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		lignes, err := ligneService.GetAllLignes()
 		if err != nil {
