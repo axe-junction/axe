@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
+  useMap,
   Polyline,
 } from "react-leaflet";
+import L from "leaflet";
+import "leaflet-routing-machine";
 import {
   Search,
   Filter,
@@ -17,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import "leaflet/dist/leaflet.css";
+import { RoutingService } from "../services/routingService";
 
 // Real destinations in Algiers
 const popularDestinations = [
@@ -77,6 +81,111 @@ const exampleRecentDestinations: Destination[] = [
   },
 ];
 
+// Custom component to handle routing on the map
+function RoutingMachine({
+  start,
+  end,
+  onRouteFound,
+}: {
+  start: { lat: number; lng: number } | null;
+  end: { lat: number; lng: number } | null;
+  onRouteFound: (route: RouteData) => void;
+}) {
+  const map = useMap();
+  const routingControlRef = useRef<L.Routing.Control | null>(null);
+
+  useEffect(() => {
+    if (!start || !end) {
+      // Remove existing routing control if no start/end points
+      if (routingControlRef.current) {
+        map.removeControl(routingControlRef.current);
+        routingControlRef.current = null;
+      }
+      return;
+    }
+
+    // Remove existing routing control
+    if (routingControlRef.current) {
+      map.removeControl(routingControlRef.current);
+    }
+
+    // Create new routing control with proper styling
+    const routingControl = L.Routing.control({
+      waypoints: [L.latLng(start.lat, start.lng), L.latLng(end.lat, end.lng)],
+      routeWhileDragging: false,
+      addWaypoints: false,
+      createMarker: () => null, // Don't create markers (we handle them separately)
+      lineOptions: {
+        styles: [
+          {
+            color: "#3B82F6",
+            weight: 6,
+            opacity: 1,
+            dashArray: "",
+            lineCap: "round",
+            lineJoin: "round",
+          },
+        ],
+        extendToWaypoints: true,
+        missingRouteTolerance: 0,
+      },
+      show: false, // Don't show the control panel
+      router: L.Routing.osrmv1({
+        serviceUrl: "https://router.project-osrm.org/route/v1",
+        profile: "driving",
+      }),
+    });
+
+    // Add the control to the map
+    routingControl.addTo(map);
+
+    // Listen for route found event
+    routingControl.on("routesfound", (e: any) => {
+      const routes = e.routes;
+      if (routes && routes.length > 0) {
+        const route = routes[0];
+
+        const routeData: RouteData = {
+          from: start,
+          to: end,
+          path: route.coordinates.map((coord: L.LatLng) => ({
+            lat: coord.lat,
+            lng: coord.lng,
+          })),
+          duration: Math.round(route.summary.totalTime / 60), // convert to minutes
+          distance: Math.round(route.summary.totalDistance / 1000), // convert to km
+          instructions: route.instructions.map(
+            (instruction: any) =>
+              instruction.text || instruction.instruction || "Continue"
+          ),
+        };
+
+        onRouteFound(routeData);
+
+        // Fit map to route bounds with padding
+        const bounds = L.latLngBounds(route.coordinates);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    });
+
+    // Handle routing errors
+    routingControl.on("routingerror", (e: any) => {
+      console.error("Routing error:", e);
+    });
+
+    routingControlRef.current = routingControl;
+
+    return () => {
+      if (routingControlRef.current) {
+        map.removeControl(routingControlRef.current);
+        routingControlRef.current = null;
+      }
+    };
+  }, [map, start, end, onRouteFound]);
+
+  return null;
+}
+
 export default function MapView() {
   const { mapCenter, recentSearches, addRecentSearch } = useAppStore();
 
@@ -97,6 +206,8 @@ export default function MapView() {
     []
   );
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [routingService] = useState(() => RoutingService.getInstance());
 
   // Get current position
   useEffect(() => {
@@ -153,44 +264,44 @@ export default function MapView() {
 
     setIsCalculatingRoute(true);
 
-    // Simulate route calculation (in real app, you'd use a routing service)
-    setTimeout(() => {
-      const route: RouteData = {
+    try {
+      const route = await routingService.calculateRoute(currentPosition, {
+        lat: destination.lat,
+        lng: destination.lng,
+      });
+
+      const routeData: RouteData = {
         from: currentPosition,
         to: { lat: destination.lat, lng: destination.lng },
-        path: [
-          currentPosition,
-          {
-            lat:
-              currentPosition.lat +
-              (destination.lat - currentPosition.lat) * 0.3,
-            lng:
-              currentPosition.lng +
-              (destination.lng - currentPosition.lng) * 0.3,
-          },
-          {
-            lat:
-              currentPosition.lat +
-              (destination.lat - currentPosition.lat) * 0.7,
-            lng:
-              currentPosition.lng +
-              (destination.lng - currentPosition.lng) * 0.7,
-          },
-          { lat: destination.lat, lng: destination.lng },
-        ],
-        duration: Math.floor(Math.random() * 30) + 15, // 15-45 minutes
-        distance: Math.floor(Math.random() * 20) + 5, // 5-25 km
-        instructions: [
-          "Head north on your current street",
-          "Turn right onto main road",
-          "Continue straight for 2.5 km",
-          "Turn left at the roundabout",
-          "Your destination will be on the right",
-        ],
+        path: route.path,
+        duration: route.duration,
+        distance: route.distance,
+        instructions: route.instructions,
       };
-      setRouteData(route);
+
+      setRouteData(routeData);
+    } catch (error) {
+      console.error("Failed to calculate route:", error);
+
+      // Create a simple fallback route
+      const fallbackRoute: RouteData = {
+        from: currentPosition,
+        to: { lat: destination.lat, lng: destination.lng },
+        path: [currentPosition, { lat: destination.lat, lng: destination.lng }],
+        duration: Math.floor(Math.random() * 30) + 15,
+        distance: Math.floor(Math.random() * 20) + 5,
+        instructions: ["Head towards your destination", "You have arrived"],
+      };
+
+      setRouteData(fallbackRoute);
+    } finally {
       setIsCalculatingRoute(false);
-    }, 1500);
+    }
+  };
+
+  const handleRouteFound = (route: RouteData) => {
+    setRouteData(route);
+    setIsCalculatingRoute(false);
   };
 
   const handleDestinationSelect = (destination: Destination) => {
@@ -346,10 +457,38 @@ export default function MapView() {
                 </div>
               </div>
             </div>
-            {isCalculatingRoute && (
-              <div className="text-sm text-blue-600">Calculating...</div>
-            )}
+            <div className="flex items-center gap-2">
+              {isCalculatingRoute && (
+                <div className="text-sm text-blue-600">Calculating...</div>
+              )}
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-blue-600 hover:text-blue-800 text-sm"
+              >
+                {isExpanded ? "Hide" : "Show"} directions
+              </button>
+            </div>
           </div>
+
+          {/* Route Instructions */}
+          {isExpanded && routeData.instructions.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-blue-200">
+              <h4 className="font-medium text-gray-900 mb-2">Directions:</h4>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {routeData.instructions.map((instruction, index) => (
+                  <div
+                    key={index}
+                    className="text-sm text-gray-700 flex items-start gap-2"
+                  >
+                    <span className="text-blue-600 font-medium min-w-[20px]">
+                      {index + 1}.
+                    </span>
+                    <span>{instruction}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -379,16 +518,35 @@ export default function MapView() {
               </Marker>
             )}
 
-            {/* Route Path */}
-            {routeData && (
+            {/* Routing Machine Component */}
+            <RoutingMachine
+              start={currentPosition}
+              end={
+                selectedDestination
+                  ? {
+                      lat: selectedDestination.lat,
+                      lng: selectedDestination.lng,
+                    }
+                  : null
+              }
+              onRouteFound={handleRouteFound}
+            />
+
+            {/* Fallback Polyline for route visualization */}
+            {routeData && routeData.path.length > 0 && (
               <Polyline
                 positions={routeData.path.map((point) => [
                   point.lat,
                   point.lng,
                 ])}
-                color="#3B82F6"
-                weight={4}
-                opacity={0.8}
+                pathOptions={{
+                  color: "#3B82F6",
+                  weight: 6,
+                  opacity: 1,
+                  dashArray: "",
+                  lineCap: "round",
+                  lineJoin: "round",
+                }}
               />
             )}
           </MapContainer>

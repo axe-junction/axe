@@ -48,6 +48,52 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
 }
 
+/* Leaflet routing machine styles */
+.leaflet-routing-container {
+  display: none !important; /* Hide the routing instructions panel */
+}
+
+.leaflet-routing-alternatives-container {
+  display: none !important; /* Hide alternative routes */
+}
+
+/* Ensure route lines are properly styled */
+.leaflet-routing-line {
+  stroke: #3b82f6 !important;
+  stroke-width: 6 !important;
+  stroke-opacity: 1 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+  stroke-dasharray: none !important;
+}
+
+/* Route line hover effects */
+.leaflet-routing-line:hover {
+  stroke-width: 8 !important;
+}
+
+/* Ensure routing control lines are visible */
+.leaflet-routing-container-hide {
+  display: none !important;
+}
+
+/* Override any conflicting styles */
+.leaflet-overlay-pane svg path {
+  pointer-events: visibleStroke;
+}
+
+/* Ensure the route polyline is visible */
+.leaflet-interactive {
+  cursor: pointer;
+}
+
+/* Fix for routing line visibility */
+.leaflet-routing-line,
+.leaflet-routing-shadow {
+  pointer-events: none;
+}
+
 /* Custom transitions */
 .transition-all {
   transition: all 0.2s ease-in-out;
