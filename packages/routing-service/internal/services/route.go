@@ -31,7 +31,6 @@ func (s *RoutingService) GetBestRoute(ctx context.Context, fromLat, fromLng, toL
 		return nil, errors.New("no end station found")
 	}
 
-	// 2. Try to find the best route between combinations
 	var bestRoute models.Lignes
 	var found bool
 
@@ -53,7 +52,6 @@ func (s *RoutingService) GetBestRoute(ctx context.Context, fromLat, fromLng, toL
 		return nil, errors.New("no route found between the selected stations")
 	}
 
-	// 3. Return result
 	result := &models.RouteResult{
 		From:  startStations[0],
 		To:    endStations[0],
