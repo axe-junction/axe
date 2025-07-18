@@ -10,6 +10,9 @@ type LigneRepo struct {
 	db *gorm.DB
 
 }
+func NewLigneRepo(db *gorm.DB) *LigneRepo {
+	return &LigneRepo{db: db}
+}
 
 func (repo *LigneRepo) GetLignes() (models.Lignes, error) {
 	var lignes models.Lignes
@@ -34,7 +37,24 @@ func (repo *LigneRepo) GetByType(typee string) (models.Lignes, error) {
 	}
 	return lignes, nil
 }
+func (repo *LigneRepo) GetNearby(latitude, longitude float64) (models.Lignes, error) {
+	 radius := 20 
+	var lignes models.Lignes
+	for i:=radius; i>0 ; i++{
+		if err := repo.db.Preload("Stations").Where("ST_DWithin(ST_MakePoint(longitude, latitude)::geography, ST_MakePoint(?, ?)::geography, ?)", longitude, latitude, radius).Find(&lignes).Error; err != nil {
+			return nil, err
+		}
+		if len(lignes) == 0 {
+			radius += 100
+			continue
+		}
+		break
+	}
+
+
+	return lignes, nil
+}
 
 
 
-// var _ models.LigneRepo = (*LigneRepo)(nil)
+var _ models.LigneRepo = (*LigneRepo)(nil)

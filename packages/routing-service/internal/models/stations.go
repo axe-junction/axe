@@ -13,4 +13,5 @@ type Stations []Station
 type StationRepo interface{
 	GetAll() (Stations, error)
 	GetByID(id string) (Stations, error)
+	GetNearby(latitude, longitude float64) (Stations, error)
 }
