@@ -1,6 +1,19 @@
----
+version: '3.8'
 
 services:
+  data-api:
+    build:
+      context: ./packages/data-service/fastapi
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://example_user:example_password@db:5432/example_db
+    depends_on:
+      - db
+    networks:
+      - axe_network
+
   db:
     image: postgres:latest
     environment:
@@ -11,5 +24,9 @@ services:
       - "5436:5432"
     volumes:
       - ./volumes/db:/var/lib/postgresql/data
+    networks:
+      - axe_network
 
-      
+networks:
+  axe_network:
+    driver: bridge
