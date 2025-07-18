@@ -54,16 +54,18 @@ nav {
 /* Ensure content doesn't overflow */
 main {
   height: calc(100vh - 64px); /* Subtract navbar height */
+  padding-bottom: 4px; /* Add small padding at bottom */
 }
 
 @media (max-width: 1024px) {
   main {
     height: calc(100vh - 64px - 80px); /* Subtract navbar and bottom nav */
+    padding-bottom: 8px; /* Add more padding on mobile */
   }
 
   /* On mobile, ensure map doesn't take full height */
   .leaflet-container {
-    max-height: 50vh;
+    max-height: calc(50vh - 2rem);
   }
 }
 
@@ -71,12 +73,14 @@ main {
 .map-container {
   min-height: 300px;
   max-height: 70vh;
+  margin-bottom: 1rem;
 }
 
 @media (min-width: 1024px) {
   .map-container {
     max-height: none;
     height: 100%;
+    margin-bottom: 0;
   }
 }
 
@@ -240,4 +244,41 @@ main {
   .main-content {
     padding-top: 0;
   }
+}
+
+/* Add bottom spacing for mobile MapView */
+@media (max-width: 1024px) {
+  .mapview-container {
+    padding-bottom: 1rem;
+  }
+
+  /* Ensure route options panel has proper spacing */
+  .route-options-panel {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Search suggestions styling */
+.search-suggestions {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-suggestion-item {
+  transition: background-color 0.15s ease;
+}
+
+.search-suggestion-item:hover {
+  background-color: #f9fafb;
+}
+
+.search-suggestion-item:active {
+  background-color: #f3f4f6;
+}
+
+/* Ensure proper z-index for search dropdowns */
+.search-dropdown {
+  z-index: 1000;
 }
