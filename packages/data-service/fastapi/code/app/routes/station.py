@@ -5,9 +5,9 @@ router = APIRouter()
 
 
 @router.post("/")
-async def create_user(user:placeCreate , request: Request):
+async def create_station(station:placeCreate , request: Request):
     db = request.app.state.db
     
-    created = await UserRepository.create_place(db, user)
+    created = await UserRepository.create_place(db, station)
     return created
 

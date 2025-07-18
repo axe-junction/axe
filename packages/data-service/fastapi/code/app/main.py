@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.routes.user import router as user_router
+from app.routes.station import router as station_router
 from prisma import Prisma
 import time
 
@@ -28,17 +28,10 @@ app = FastAPI(
     ],
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan,#in actual application t7tajjo gir hdi rni nzid 3liha brk hna hhh
+    lifespan=lifespan,
     debug=True,
 
 )
-# @app.on_event("startup")
-# async def startup():
-#     await db.connect()
-
-# @app.on_event("shutdown")
-# async def shutdown():
-#     await db.disconnect()
 
 @app.middleware("http")
 async def log_time(request, call_next):
@@ -56,4 +49,4 @@ async def health():
         return {"status": "error", "details": str(e)}
     
     
-app.include_router(user_router, prefix="/users", tags=["Users"])
+app.include_router(station_router, prefix="/users", tags=["Users"])
