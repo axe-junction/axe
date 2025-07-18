@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type Ligne struct{
 	ID        string  `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"id"`
 	Name	  string  `json:"name"`
@@ -17,5 +19,6 @@ type LigneRepo interface{
 	GetLignes() (Lignes, error)
 	GetByID(id string) (Ligne, error)
 	GetByType(typee string) (Lignes, error)
+	GetRouteBetweenStations(ctx context.Context, startID, endID string) (Lignes, error)
 
 }

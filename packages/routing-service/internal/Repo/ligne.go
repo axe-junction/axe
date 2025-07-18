@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"context"
+
 	"github.com/axe-junction/axe-server/internal/models"
 	"gorm.io/gorm"
 )
@@ -50,11 +52,15 @@ func (repo *LigneRepo) GetNearby(latitude, longitude float64) (models.Lignes, er
 		}
 		break
 	}
-
-
 	return lignes, nil
 }
-
+func (repo *LigneRepo) GetRouteBetweenStations(ctx context.Context, startID, endID string) (models.Lignes, error) {
+	var lignes models.Lignes
+	if err := repo.db.Preload("Stations").Where("start_geo = ? AND end_geo = ?", startID, endID).Find(&lignes).Error; err != nil {
+		return nil, err
+	}
+	return lignes, nil
+}
 
 
 var _ models.LigneRepo = (*LigneRepo)(nil)
