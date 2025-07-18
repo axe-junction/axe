@@ -15,7 +15,7 @@ services:
       - axe_network
 
   db:
-    image: postgres:latest
+    image: postgis/postgis:latest
     environment:
       POSTGRES_USER: example_user
       POSTGRES_PASSWORD: example_password
