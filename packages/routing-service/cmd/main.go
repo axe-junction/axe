@@ -24,31 +24,25 @@ func main() {
 		panic(err)
 	}
 
-	// Auto-migrate the database
 	err = db.AutoMigrate(&models.User{})
 	if err != nil {
 		log.Printf("Failed to migrate database: %v", err)
 	}
 
-	// Initialize repositories
 	userRepo := repo.NewUserRepository(db)
 
-	// Initialize handlers
 	oauthHandler := handlers.NewOAuthHandler(cfg, userRepo)
 
 	r := gin.Default()
 
-	// Serve static files
 	r.Static("/static", "./static")
 	r.GET("/", func(c *gin.Context) {
 		c.File("./static/index.html")
 	})
 
-	// Setup session middleware
 	store := cookie.NewStore([]byte(cfg.SESSION_SECRET))
 	r.Use(sessions.Sessions("session", store))
 
-	// Public routes
 	publicAPI := r.Group("/auth")
 	{
 		publicAPI.GET("/google", oauthHandler.GoogleLogin)
@@ -56,7 +50,6 @@ func main() {
 		publicAPI.POST("/logout", oauthHandler.Logout)
 	}
 
-	// Protected routes
 	protectedAPI := r.Group("/api")
 	protectedAPI.Use(middleware.RequireAuth())
 	{

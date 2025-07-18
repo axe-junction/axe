@@ -21,7 +21,7 @@ type OAuthHandler struct {
 
 func NewOAuthHandler(cfg *config.Env, userRepo *repo.UserRepository) *OAuthHandler {
 	return &OAuthHandler{
-		oauthService: services.NewOAuthService(cfg),
+		oauthService: services.NewOAuthService(),
 		userRepo:     userRepo,
 		config:       cfg,
 	}
