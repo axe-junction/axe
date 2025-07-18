@@ -4,52 +4,44 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/axe-junction/axe-server/internal/models"
 )
 
-type OSRMRepo interface {
-	GetRouteBetween(ctx context.Context,fromlon, fromlat, tolon, tolat float64) (*models.OSRMRouteResponse, error)
-}
-type OsrmReposne struct {
-	BaseURL string
-	client *http.Client
+type OSRMRepo struct {
+	baseURL string
 }
 
-func NewOSRMRepo(baseURL string) *OsrmReposne {
-
-	return &OsrmReposne{
-		BaseURL: baseURL,
-		client :&http.Client{},
-	}
+func NewOSRMRepo(baseURL string) *OSRMRepo {
+	return &OSRMRepo{baseURL: baseURL}
 }
-func (repo *OsrmReposne) GetRouteBetween(ctx context.Context, fromlon, fromlat, tolon, tolat float64) (*models.OSRMRouteResponse, error) {
-	url := repo.BaseURL + "/route/v1/driving/" + 
-		fmt.Sprintf("%f,%f;%f,%f", fromlon, fromlat, tolon, tolat) + 
-		"?overview=full&geometries=geojson"
 
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
+func (r *OSRMRepo) GetRouteBetween(ctx context.Context, fromLng, fromLat, toLng, toLat float64, profile string) (*models.OSRMResponse, error) {
+	url := fmt.Sprintf("%s/route/v1/%s/%.6f,%.6f;%.6f,%.6f?steps=true&geometries=geojson",
+		r.baseURL, profile, fromLng, fromLat, toLng, toLat)
 
-	resp, err := repo.client.Do(req)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get route: %s", resp.Status)
-	}
-
-	var routeResponse models.OSRMRouteResponse
-	if err := json.NewDecoder(resp.Body).Decode(&routeResponse); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return nil, err
 	}
 
-	return &routeResponse, nil
-}
+	var osrmResp models.OSRMResponse
+	if err := json.Unmarshal(body, &osrmResp); err != nil {
+		return nil, err
+	}
 
+	if osrmResp.Code != "Ok" || len(osrmResp.Routes) == 0 {
+		return nil, fmt.Errorf("osrm error: %s", osrmResp.Code)
+	}
+
+	return &osrmResp, nil
+}
 
