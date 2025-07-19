@@ -1,6 +1,7 @@
 import aio_pika
 import asyncio
 from app.models.station import placeCreate
+from app.repository.station import UserRepository
 class DefectAlgo:
     rabbitmq:aio_pika.Connection
     @staticmethod
@@ -9,8 +10,9 @@ class DefectAlgo:
         return None
     
     async def checkconflict(data:placeCreate)->bool:
+        await UserRepository
         
         
-       pass
+       
     async def  getchange():
        pass
