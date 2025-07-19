@@ -1,6 +1,65 @@
-version: '3.8'
 
 services:
+
+
+  routing-db:
+    image: postgis/postgis:15-3.3
+    environment:
+      POSTGRES_USER: example_user
+      POSTGRES_PASSWORD: example_password
+      POSTGRES_DB: example_db
+    ports:
+      - "5450:5432"
+    volumes:
+      - ./volumes/routing-db:/var/lib/postgresql/data
+      - ./shared/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - axe_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U example_user -d example_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway-db:
+    image: postgis/postgis:15-3.3
+    environment:
+      POSTGRES_USER: example_user
+      POSTGRES_PASSWORD: example_password
+      POSTGRES_DB: example_db
+    ports:
+      - "5451:5432"
+    volumes:
+      - ./volumes/gateway-db:/var/lib/postgresql/data
+      - ./shared/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - axe_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U example_user -d example_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  data-db:
+    image: postgis/postgis:15-3.3
+    environment:
+      POSTGRES_USER: example_user
+      POSTGRES_PASSWORD: example_password
+      POSTGRES_DB: data_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./volumes/data-db:/var/lib/postgresql/data
+    networks:
+      - axe_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U example_user -d data_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === FastAPI Data API ===
+
   data-api:
     build:
       context: ./packages/data-service/fastapi
@@ -8,62 +67,46 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://example_user:example_password@db:5432/example_db
+      - DATABASE_URL=postgresql://example_user:example_password@data-db:5432/data_db
     depends_on:
-      - db
+      data-db:
+        condition: service_healthy
     networks:
       - axe_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
 
-  db:
-    image: postgis/postgis:latest
-    environment:
-      POSTGRES_USER: example_user
-      POSTGRES_PASSWORD: example_password
-      POSTGRES_DB: example_db
-    ports:
-      - "5436:5432"
-    volumes:
-      - ./volumes/db:/var/lib/postgresql/data
-    networks:
-      - axe_network
+  # === Routing Service (Golang) ===
 
-  rabitmq:
-    image: rabbitmq:management
-    ports:
-      - "15672:15672"  
-      - "5672:5672"    
-    networks:
-      - axe_network
-  
-  zookeeper:
-    image: zookeeper:3.7
-    ports:
-      - "2181:2181"
-    networks:
-      - axe_network
-  kafka:
-    image: confluentinc/cp-kafka:7.2.1
-    ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
-    networks:
-      - axe_network
   routing-service:
     build:
       context: ./packages/routing-service
       dockerfile: Dockerfile
     environment:
-      - DB_HOST=db
+      - PORT=8100
+      - DB_HOST=routing-db
       - DB_PORT=5432
       - DB_USER=example_user
       - DB_PASSWORD=example_password
       - DB_NAME=example_db
+      - OSRM_URL=https://osrm.walidbechar.dev
       - GIN_MODE=release
+      - JWT_SECRET=your-jwt-secret-here
+      - GOOGLE_CLIENT_ID=your-google-client-id
+      - GOOGLE_CLIENT_SECRET=your-google-client-secret
+      - GOOGLE_REDIRECT_URL=http://localhost:3001/auth/google/callback
+      - SESSION_SECRET=your-session-secret-here
     ports:
       - "3001:3001"
     depends_on:
-      - db
+      routing-db:
+        condition: service_healthy
+    volumes:
+      - ./packages/routing-service/static:/root/static
     networks:
       - axe_network
     healthcheck:
@@ -72,27 +115,26 @@ services:
       timeout: 10s
       retries: 3
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.routing.rule=PathPrefix(`/routing`)"
-      - "traefik.http.services.routing.loadbalancer.server.port=3001"
-  vtc-service:
+
+  # === Gateway (Golang) ===
+
+  gateway:
     build:
-      context: ./packages/vtc-service
+      context: ./packages/gateway
       dockerfile: Dockerfile
     environment:
-      - DB_HOST=db
-      - DB_PORT=5439
-      - DB_USER=example_user
-      - DB_PASSWORD=example_password
-      - DB_NAME=example_db
+      - PORT=8080
       - ROUTING_SERVICE_URL=http://routing-service:3001
+      - VTC_SERVICE_URL=http://vtc-service:8080
+      - DATA_SERVICE_URL=http://data-api:8000
       - GIN_MODE=release
     ports:
       - "8080:8080"
     depends_on:
-      - routing-service
-      - db
+      routing-service:
+        condition: service_healthy
+      vtc-service:
+        condition: service_healthy
     networks:
       - axe_network
     healthcheck:
@@ -101,25 +143,119 @@ services:
       timeout: 10s
       retries: 3
     restart: unless-stopped
+
+  # === VTC Service ===
+
+  vtc-service:
+    build:
+      context: ./packages/vtc-service
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8080
+      - DB_HOST=routing-db
+      - DB_PORT=5432
+      - DB_USER=example_user
+      - DB_PASSWORD=example_password
+      - DB_NAME=example_db
+      - ROUTING_SERVICE_URL=http://routing-service:3001
+      - GIN_MODE=release
+    ports:
+      - "8082:8080"
+    depends_on:
+      routing-service:
+        condition: service_healthy
+    networks:
+      - axe_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # === RabbitMQ ===
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - ./volumes/rabbitmq:/var/lib/rabbitmq
+    networks:
+      - axe_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # === Web Frontend ===
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+      - routing-service
+    networks:
+      - axe_network
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.vtc.rule=PathPrefix(`/vtc`)"
-      - "traefik.http.services.vtc.loadbalancer.server.port=8080"
+      - "traefik.http.routers.web.rule=Host(`localhost`)"
+      - "traefik.http.services.web.loadbalancer.server.port=80"
+
+  # === Mobile App Dev Container ===
+
+  mobile-dev:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+      - "19000:19000"
+      - "19001:19001"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    networks:
+      - axe_network
+    profiles:
+      - development
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+
+  # === Traefik Reverse Proxy ===
+
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.0
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
       - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@axejunction.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
-      - "8080:8080"  # Traefik dashboard
+      - "443:443"
+      - "8090:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./volumes/letsencrypt:/letsencrypt
     networks:
       - axe_network
-      
+    profiles:
+      - production
 
 networks:
   axe_network:
