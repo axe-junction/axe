@@ -1,0 +1,4 @@
+.env
+main
+*.pb.go
+*.pb.gw.go
