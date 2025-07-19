@@ -45,6 +45,9 @@ make init-dbs
 
 ### Production Environment
 
+![alt text](image.png)
+
+
 ```bash
 # Start production services
 make prod
