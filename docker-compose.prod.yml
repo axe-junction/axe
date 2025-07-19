@@ -1,0 +1,128 @@
+version: "3.9"
+
+# Production override - optimized for performance and security
+services:
+  routing-service:
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    environment:
+      - GIN_MODE=release
+      - LOG_LEVEL=info
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  vtc-service:
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    environment:
+      - GIN_MODE=release
+      - LOG_LEVEL=info
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  data-api:
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    environment:
+      - DEBUG=false
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    environment:
+      - POSTGRES_SHARED_PRELOAD_LIBRARIES=pg_stat_statements
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:z
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Production monitoring and alerting
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - axe-network
+    profiles:
+      - "monitoring"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8081:8080"
+    networks:
+      - axe-network
+    profiles:
+      - "monitoring"

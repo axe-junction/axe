@@ -1,0 +1,255 @@
+version: "3.9"
+
+services:
+  # Database Services - One per service
+  routing-db:
+    image: postgis/postgis:15-3.3
+    environment:
+      POSTGRES_USER: routing_user
+      POSTGRES_PASSWORD: routing_password
+      POSTGRES_DB: routing_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - routing_db_data:/var/lib/postgresql/data
+      - ./deployments/init-routing-db.sql:/docker-entrypoint-initdb.d/init-routing-db.sql:ro
+    networks:
+      - axe-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U routing_user -d routing_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  vtc-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: vtc_user
+      POSTGRES_PASSWORD: vtc_password
+      POSTGRES_DB: vtc_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5433:5432"
+    volumes:
+      - vtc_db_data:/var/lib/postgresql/data
+      - ./deployments/init-vtc-db.sql:/docker-entrypoint-initdb.d/init-vtc-db.sql:ro
+    networks:
+      - axe-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vtc_user -d vtc_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  data-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: data_user
+      POSTGRES_PASSWORD: data_password
+      POSTGRES_DB: data_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5434:5432"
+    volumes:
+      - data_db_data:/var/lib/postgresql/data
+      - ./deployments/init-data-db.sql:/docker-entrypoint-initdb.d/init-data-db.sql:ro
+    networks:
+      - axe-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U data_user -d data_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Core Services
+  routing-service:
+    build:
+      context: ./packages/routing-service
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=routing-db
+      - DB_PORT=5432
+      - DB_USER=routing_user
+      - DB_PASSWORD=routing_password
+      - DB_NAME=routing_db
+      - SERVER_PORT=3001
+      - OSRM_URL=https://osrm.walidbechar.dev
+      - GIN_MODE=release
+    ports:
+      - "3001:3001"
+    depends_on:
+      routing-db:
+        condition: service_healthy
+    networks:
+      - axe-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.routing.rule=PathPrefix(`/routing`)"
+      - "traefik.http.services.routing.loadbalancer.server.port=3001"
+
+  vtc-service:
+    build:
+      context: ./packages/vtc-service
+      dockerfile: Dockerfile
+    environment:
+      - DB_HOST=vtc-db
+      - DB_PORT=5432
+      - DB_USER=vtc_user
+      - DB_PASSWORD=vtc_password
+      - DB_NAME=vtc_db
+      - ROUTING_SERVICE_URL=http://routing-service:3001
+      - SERVER_PORT=8080
+      - GIN_MODE=release
+    ports:
+      - "8080:8080"
+    depends_on:
+      - routing-service
+      - vtc-db
+    networks:
+      - axe-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vtc.rule=PathPrefix(`/vtc`)"
+      - "traefik.http.services.vtc.loadbalancer.server.port=8080"
+
+  data-api:
+    build:
+      context: ./packages/data-service/fastapi
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://data_user:data_password@data-db:5432/data_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      data-db:
+        condition: service_healthy
+    networks:
+      - axe-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.data-api.rule=PathPrefix(`/api/data`)"
+      - "traefik.http.services.data-api.loadbalancer.server.port=8000"
+
+  # Optional: Reverse Proxy (Traefik)
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=admin@axe.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8090:8080" # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    networks:
+      - axe-network
+    restart: unless-stopped
+    profiles:
+      - "proxy"
+
+  # Optional: Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - axe-network
+    restart: unless-stopped
+    profiles:
+      - "monitoring"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - axe-network
+    restart: unless-stopped
+    profiles:
+      - "monitoring"
+
+  # Optional: Redis for caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - axe-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - "cache"
+
+volumes:
+  routing_db_data:
+    driver: local
+  vtc_db_data:
+    driver: local
+  data_db_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  redis_data:
+    driver: local
+  letsencrypt:
+    driver: local
+
+networks:
+  axe-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
