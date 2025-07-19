@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllLignesHandler(ligneService services.LineService) gin.HandlerFunc {
+func GetAllLinesHandler(lineService services.LineService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		lignes, err := ligneService.GetAllLignes()
+		lines, err := lineService.GetAllLines()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, lignes)
+		c.JSON(http.StatusOK, lines)
 	}
 }
