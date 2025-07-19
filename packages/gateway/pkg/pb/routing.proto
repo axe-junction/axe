@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package routing;
+
+option go_package = "github.com/axe-junction/axe-server/gateway/pkg/pb";
+
+message RouteRequest {
+  double from_lat = 1;
+  double from_lng = 2;
+  double to_lat = 3;
+  double to_lng = 4;
+  RouteOptions options = 5;
+}
+
+message RouteOptions {
+  bool safety_filter = 1;
+  double min_safety_rating = 2;
+  repeated string payment_methods = 3;
+  double max_walking_time = 4;
+  bool include_private = 5;
+  double max_fare = 6;
+  string mode = 7; // economy, fastest, safest, balanced, comfort
+}
+
+message RouteResponse {
+  RouteResult route = 1;
+  string error = 2;
+}
+
+message RouteResult {
+  Station from = 1;
+  Station to = 2;
+  repeated RouteSegment segments = 3;
+  double total_duration = 4;
+  double total_distance = 5;
+  double total_fare = 6;
+  string currency = 7;
+  RouteSummary summary = 8;
+  double overall_safety_rating = 9;
+  repeated string payment_methods = 10;
+  bool payment_required = 11;
+  double total_time = 12;
+}
+
+message Station {
+  string id = 1;
+  string name = 2;
+  double latitude = 3;
+  double longitude = 4;
+  string type = 5;
+}
+
+message RouteSegment {
+  string transport_type = 1;
+  Station from_station = 2;
+  Station to_station = 3;
+  double duration = 4;
+  double distance = 5;
+  double fare = 6;
+  string line_name = 7;
+  repeated Instruction instructions = 8;
+}
+
+message RouteSummary {
+  double total_time = 1;
+  double total_distance = 2;
+  double total_fare = 3;
+  double walking_duration = 4;
+  double public_duration = 5;
+  int32 transfers_count = 6;
+  repeated string route_names = 7;
+}
+
+message Instruction {
+  string text = 1;
+  double distance = 2;
+  double duration = 3;
+}
+
+service RoutingService {
+  rpc GetBestRoute(RouteRequest) returns (RouteResponse);
+}

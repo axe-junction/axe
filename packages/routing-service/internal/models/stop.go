@@ -1,15 +1,19 @@
 package models
 
-/*
 import "github.com/google/uuid"
 
-type Stop struct {
+// LineStop represents a stop on a specific line
+type LineStop struct {
 	ID        uuid.UUID `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()" json:"id"`
-	RouteID   uuid.UUID `json:"route_id"`
-	StationID uuid.UUID `json:"station_id"`
-	Sequence  int       `json:"sequence"`
-	Route     Ligne     `json:"route" gorm:"foreignKey:RouteID"`
+	LineID    uuid.UUID `gorm:"column:line_id" json:"line_id"`
+	StationID uuid.UUID `gorm:"column:station_id" json:"station_id"`
+	Sequence  int       `gorm:"column:sequence" json:"sequence"`
+	Line      Line      `json:"line" gorm:"foreignKey:LineID"`
 	Station   Station   `json:"station" gorm:"foreignKey:StationID"`
 }
-type Stops []Stop
-*/
+type LineStops []LineStop
+
+// TableName sets the table name for LineStop
+func (LineStop) TableName() string {
+	return "stops"
+}

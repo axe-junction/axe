@@ -1,0 +1,646 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+  color: #1f2937;
+  background-color: #ffffff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* CSS Variables for consistent colors */
+  --primary-color: #6316db;
+  --secondary-color: #ffffff;
+  --primary-rgb: 99, 22, 219;
+  --secondary-rgb: 255, 255, 255;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: var(--secondary-color);
+  color: #1f2937;
+}
+
+/* Override default root styles from App.css */
+#root {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Ensure full height layout */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Fixed navbar with consistent styling */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background-color: var(--secondary-color) !important;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Ensure navbar content has proper background */
+.navbar * {
+  background-color: transparent;
+}
+
+.navbar .bg-white {
+  background-color: var(--secondary-color) !important;
+}
+
+/* Mobile menu background fix */
+.navbar .lg\:hidden > div,
+.navbar-mobile-menu {
+  background-color: var(--secondary-color) !important;
+}
+
+/* Page container with fixed navbar */
+.page-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-color);
+}
+
+/* Main content area - scrollable for non-home pages */
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  margin-top: 64px; /* Height of navbar */
+  background-color: #f9fafb; /* Light gray background for content */
+}
+
+.content-area.scrollable {
+  overflow-y: auto;
+}
+
+.content-area.non-scrollable {
+  overflow: hidden;
+  background-color: var(--secondary-color); /* White background for map */
+}
+
+/* Bottom navigation positioning */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background-color: var(--secondary-color) !important;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Mobile adjustments */
+@media (max-width: 1024px) {
+  .content-area {
+    margin-bottom: 80px; /* Height of bottom navigation */
+  }
+}
+
+/* Primary color utilities */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.border-primary {
+  border-color: var(--primary-color) !important;
+}
+
+.ring-primary {
+  --tw-ring-color: var(--primary-color) !important;
+}
+
+.bg-primary\/10 {
+  background-color: rgba(var(--primary-rgb), 0.1) !important;
+}
+
+.bg-primary\/5 {
+  background-color: rgba(var(--primary-rgb), 0.05) !important;
+}
+
+.hover\:bg-primary:hover {
+  background-color: var(--primary-color) !important;
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: rgba(var(--primary-rgb), 0.9) !important;
+}
+
+.hover\:text-primary:hover {
+  color: var(--primary-color) !important;
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--primary-color) !important;
+}
+
+/* Button styles with primary color */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border: 1px solid var(--primary-color);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: rgba(var(--primary-rgb), 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: #f9fafb;
+  border-color: var(--primary-color);
+}
+
+/* Card styles */
+.card {
+  background-color: var(--secondary-color);
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Input styles */
+.input-primary {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.input-primary:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+/* Navbar full width */
+nav {
+  width: 100vw;
+}
+
+/* Ensure proper container widths */
+.max-w-7xl {
+  max-width: none;
+  width: 100%;
+}
+
+/* Fix leaflet map height issues */
+/* Leaflet map styling - Enhanced dark gray theme */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: #e5e7eb !important;
+}
+
+/* Enhanced gray map theme with better contrast */
+.leaflet-tile {
+  filter: grayscale(15%) brightness(0.85) contrast(1.15) saturate(0.8) !important;
+  opacity: 0.95 !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: white !important;
+  color: #374151 !important;
+  border: 2px solid #d1d5db !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  font-weight: 600 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #f9fafb !important;
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.leaflet-control-attribution {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #4b5563 !important;
+  font-size: 11px !important;
+  padding: 3px 6px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Enhanced marker visibility */
+.leaflet-marker-icon {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: white !important;
+  color: #1f2937 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  border: 2px solid #f3f4f6 !important;
+}
+
+.leaflet-popup-tip {
+  background-color: white !important;
+  border: 2px solid #f3f4f6 !important;
+}
+
+/* Enhanced route line styling for better visibility */
+.leaflet-routing-line {
+  stroke: var(--primary-color) !important;
+  stroke-width: 10 !important;
+  stroke-opacity: 0.95 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+  stroke-dasharray: none !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 3px 6px rgba(99, 22, 219, 0.4)) !important;
+}
+
+.leaflet-routing-line:hover {
+  stroke-width: 12 !important;
+  stroke-opacity: 1 !important;
+}
+
+/* Enhanced map controls styling */
+.leaflet-control {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-bar {
+  border: 2px solid #d1d5db !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-bar a {
+  border-bottom: 2px solid #e5e7eb !important;
+  transition: all 0.2s ease !important;
+}
+
+.leaflet-bar a:last-child {
+  border-bottom: none !important;
+}
+
+/* Map container with enhanced styling */
+.map-container {
+  min-height: 300px;
+  max-height: 70vh;
+  margin-bottom: 1rem;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 3px solid #d1d5db !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+@media (min-width: 1024px) {
+  .map-container {
+    max-height: none;
+    height: 100%;
+    margin-bottom: 0;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Enhanced overlay styling */
+.leaflet-overlay-pane svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15)) !important;
+}
+
+/* Enhanced polyline visibility */
+.leaflet-interactive {
+  cursor: pointer;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2)) !important;
+}
+
+/* Enhanced mobile map styling */
+@media (max-width: 1024px) {
+  .mapview-container .leaflet-container {
+    border-radius: 16px !important;
+    border: 3px solid #d1d5db !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* Route paths with enhanced contrast */
+.leaflet-overlay-pane path {
+  stroke-width: 10px !important;
+  stroke-opacity: 0.95 !important;
+  filter: drop-shadow(0 3px 8px rgba(99, 22, 219, 0.4)) !important;
+}
+
+/* Custom marker styling for enhanced theme */
+.custom-marker {
+  background-color: var(--primary-color) !important;
+  border: 4px solid white !important;
+  border-radius: 50% !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Enhanced tile contrast */
+.leaflet-tile-container {
+  opacity: 1 !important;
+}
+
+/* Smooth tile loading */
+.leaflet-tile {
+  transition: opacity 0.3s ease-in-out !important;
+}
+
+.leaflet-tile-loaded {
+  opacity: 1 !important;
+}
+
+/* Enhanced road visibility */
+.leaflet-overlay-pane {
+  filter: contrast(1.1) !important;
+}
+
+/* Better street name visibility */
+.leaflet-overlay-pane text {
+  fill: #374151 !important;
+  stroke: white !important;
+  stroke-width: 2px !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Enhanced zoom control styling */
+.leaflet-control-zoom {
+  margin: 16px !important;
+}
+
+.leaflet-control-zoom a {
+  width: 40px !important;
+  height: 40px !important;
+  line-height: 36px !important;
+  font-size: 18px !important;
+}
+
+/* Attribution styling */
+.leaflet-control-attribution {
+  margin: 8px !important;
+}
+
+/* Enhanced polyline for different route types */
+.route-metro {
+  stroke: #3b82f6 !important;
+  stroke-dasharray: 5, 5 !important;
+}
+
+.route-bus {
+  stroke: #10b981 !important;
+  stroke-dasharray: 10, 5 !important;
+}
+
+.route-tram {
+  stroke: #f59e0b !important;
+  stroke-dasharray: 15, 5 !important;
+}
+
+.route-vtc {
+  stroke: #8b5cf6 !important;
+  stroke-dasharray: none !important;
+}
+
+.route-walking {
+  stroke: #6b7280 !important;
+  stroke-dasharray: 2, 2 !important;
+}
+
+/* Custom scrollbar with primary color accent */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--primary-rgb), 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--primary-rgb), 0.5);
+}
+
+/* Leaflet routing machine styles */
+.leaflet-routing-container {
+  display: none !important;
+}
+
+.leaflet-routing-alternatives-container {
+  display: none !important;
+}
+
+/* Route lines with primary color */
+.leaflet-routing-line {
+  stroke: var(--primary-color) !important;
+  stroke-width: 6 !important;
+  stroke-opacity: 1 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+  stroke-dasharray: none !important;
+  pointer-events: none !important;
+}
+
+.leaflet-routing-line:hover {
+  stroke-width: 8 !important;
+}
+
+.leaflet-routing-container-hide {
+  display: none !important;
+}
+
+.leaflet-overlay-pane svg path {
+  pointer-events: none !important;
+}
+
+.leaflet-interactive {
+  cursor: pointer;
+}
+
+.leaflet-overlay-pane svg {
+  z-index: 1000 !important;
+}
+
+.leaflet-routing-line,
+.leaflet-routing-shadow {
+  pointer-events: none !important;
+  display: block !important;
+}
+
+.leaflet-overlay-pane path {
+  display: block !important;
+}
+
+/* Loading spinner with primary color */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Focus styles with primary color */
+.focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Navbar styles */
+.navbar-mobile-menu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  background-color: var(--secondary-color) !important;
+}
+
+.navbar-mobile-menu.open {
+  max-height: 400px;
+}
+
+/* Mobile menu transitions */
+.mobile-menu-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.mobile-menu-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-menu-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-menu-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Search suggestions styling */
+.search-suggestions {
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--secondary-color);
+}
+
+.search-suggestion-item {
+  transition: background-color 0.15s ease;
+  background-color: var(--secondary-color);
+}
+
+.search-suggestion-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.search-suggestion-item:active {
+  background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+/* Search dropdown */
+.search-dropdown {
+  z-index: 1000;
+  background-color: var(--secondary-color);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom transitions */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Enhanced button hover effects */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Route options panel styling */
+@media (max-width: 1024px) {
+  .mapview-container {
+    padding-bottom: 1rem;
+  }
+
+  .route-options-panel {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--secondary-color);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
