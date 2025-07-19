@@ -835,7 +835,7 @@ export default function MapView() {
   return (
     <div className="h-full flex flex-col lg:flex-row overflow-hidden">
       {/* Main Content - Map */}
-      <div className="flex-1 flex flex-col overflow-hidden max-w-none lg:max-w-[70%]">
+      <div className="flex-1 flex flex-col gap-x-4 overflow-hidden max-w-none lg:max-w-[70%]">
         {/* Mobile Header - only on mobile */}
         <div className="lg:hidden bg-white shadow-sm border-b p-4 flex-shrink-0">
           <div className="flex items-center justify-between">

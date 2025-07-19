@@ -22,14 +22,14 @@ export default function Navbar() {
       <nav
         className="hidden lg:block shadow-lg w-full"
         style={{ backgroundColor: "#6316DB" }}
-      > 
+      >
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                  <Map size={20} style={{ color: "#6316DB" }} />
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img src="/logo_white.png" alt="Logo" className="w-8 h-8" />
                 </div>
                 <span className="text-xl font-bold text-white">Axe</span>
               </Link>
