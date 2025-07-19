@@ -8,7 +8,7 @@ import asyncio
 import requests
 import json
 import uuid
-from code.app.models.station import placeInDb
+from code.app.models.station import placeCreate, placeInDb
 from agents.defect import checkconflict,getchange
 
 def geocode_station(station_name):
@@ -238,12 +238,12 @@ def clean_json_response(response_content):
     except Exception as e:
         print(f"Error cleaning JSON response: {e}")
         return response_content
-async def run():
+async def run(data:placeCreate):
     try:
-        check:bool=checkconflict()
+        check:bool=checkconflict(data )
         if check:
             print("conflict")
-            getchange()
+            getchange(data)
         else:
             print("no conflict")
     except Exception as e:

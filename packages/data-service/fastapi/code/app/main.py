@@ -12,7 +12,7 @@ RABBITMQ_URL = "amqp://guest:guest@localhost/"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    conec=await aio_pika.connect(RABBITMQ_URL)
+    conec:aio_pika.Connection=await aio_pika.connect(RABBITMQ_URL)
     app.state.rabbitmq = conec
     await db.connect()
     app.state.db = db
