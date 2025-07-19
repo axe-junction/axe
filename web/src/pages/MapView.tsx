@@ -10,7 +10,6 @@ import {
 import L from "leaflet";
 import "leaflet-routing-machine";
 import {
-  Search,
   Filter,
   Navigation,
   MapPin,
@@ -80,7 +79,7 @@ interface RouteOption {
   cost: number;
   transportModes: string[];
   description: string;
-  icon: typeof Bus | typeof Train | typeof Zap | typeof Navigation2;
+  icon: React.ComponentType<{ size?: number }>;
   color: string;
   steps: string[];
 }
@@ -273,7 +272,7 @@ export default function MapView() {
           );
           return destination || popularDestinations[0];
         })
-        .filter(Boolean);
+        .filter((dest): dest is Destination => dest !== undefined);
       setRecentDestinations(recent);
     } else {
       // Show example destinations when no recent searches
@@ -304,46 +303,6 @@ export default function MapView() {
     setDestinationSuggestions([]);
     setShowDestinationSuggestions(false);
     handleDestinationSelect(destination);
-  };
-
-  const calculateRoute = async (destination: Destination) => {
-    if (!currentPosition) return;
-
-    setIsCalculatingRoute(true);
-
-    try {
-      const route = await routingService.calculateRoute(currentPosition, {
-        lat: destination.lat,
-        lng: destination.lng,
-      });
-
-      const routeData: RouteData = {
-        from: currentPosition,
-        to: { lat: destination.lat, lng: destination.lng },
-        path: route.path,
-        duration: route.duration,
-        distance: route.distance,
-        instructions: route.instructions,
-      };
-
-      setRouteData(routeData);
-    } catch (error) {
-      console.error("Failed to calculate route:", error);
-
-      // Create a simple fallback route
-      const fallbackRoute: RouteData = {
-        from: currentPosition,
-        to: { lat: destination.lat, lng: destination.lng },
-        path: [currentPosition, { lat: destination.lat, lng: destination.lng }],
-        duration: Math.floor(Math.random() * 30) + 15,
-        distance: Math.floor(Math.random() * 20) + 5,
-        instructions: ["Head towards your destination", "You have arrived"],
-      };
-
-      setRouteData(fallbackRoute);
-    } finally {
-      setIsCalculatingRoute(false);
-    }
   };
 
   const handleRouteFound = (route: RouteData) => {
@@ -680,7 +639,10 @@ export default function MapView() {
     }
   };
 
-  const calculateRouteForOption = async (destination: Destination) => {
+  const generateRouteForOption = async (
+    option: RouteOption,
+    destination: Destination
+  ) => {
     if (!currentPosition) return;
 
     setIsCalculatingRoute(true);
@@ -726,7 +688,7 @@ export default function MapView() {
 
     // Generate new route for the selected option
     if (selectedDestination) {
-      generateRouteForOption(selectedDestination);
+      generateRouteForOption(option, selectedDestination);
     }
   };
 
