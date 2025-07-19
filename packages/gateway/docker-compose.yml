@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      - DB_HOST=gateway-db
+      - DB_PORT=5432
+      - DB_USER=gateway_user
+      - DB_PASSWORD=gateway_pass
+      - DB_NAME=gateway_db
+      - DB_SSL_MODE=disable
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URL=http://localhost:8080/auth/google/callback
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - SESSION_SECRET=${SESSION_SECRET:-your-super-secret-session-key-change-in-production}
+      - ROUTING_SERVICE_HOST=host.docker.internal
+      - ROUTING_SERVICE_PORT=50051
+      - VTC_SERVICE_HOST=host.docker.internal
+      - VTC_SERVICE_PORT=50052
+    depends_on:
+      - gateway-db
+    restart: unless-stopped
+    networks:
+      - gateway-network
+
+  gateway-db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=gateway_user
+      - POSTGRES_PASSWORD=gateway_pass
+      - POSTGRES_DB=gateway_db
+    ports:
+      - "5500:5432"
+    volumes:
+      - gateway_db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - gateway-network
+
+  # PgAdmin for database management (development only)
+  pgadmin:
+    image: dpage/pgadmin4:7
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@axe.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+    ports:
+      - "5055:80"
+    depends_on:
+      - gateway-db
+    restart: unless-stopped
+    networks:
+      - gateway-network
+    profiles:
+      - dev
+
+volumes:
+  gateway_db_data:
+
+networks:
+  gateway-network:
+    driver: bridge
