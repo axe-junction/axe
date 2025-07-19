@@ -3,16 +3,22 @@ from fastapi import FastAPI
 from app.routes.station import router as station_router
 from prisma import Prisma
 import time
+import aio_pika
+
 
 db = Prisma()
+RABBITMQ_URL = "amqp://guest:guest@localhost/"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    conec=await aio_pika.connect(RABBITMQ_URL)
+    app.state.rabbitmq = conec
     await db.connect()
     app.state.db = db
     yield
     await db.disconnect()
+    await conec.close()
    
     
 app = FastAPI(
@@ -33,6 +39,7 @@ async def log_time(request, call_next):
     duration = time.time() - start
     print(f" {request.method} {request.url.path} took {duration:.2f}s")
     return response
+
 @app.get("/health")
 async def health():
     try:

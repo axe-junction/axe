@@ -9,15 +9,14 @@ import requests
 import json
 import uuid
 from code.app.models.station import placeInDb
+from agents.defect import checkconflict,getchange
 
 def geocode_station(station_name):
     """Geocode a station using OpenStreetMap Nominatim API"""
     try:
-        # Format the query to include Algeria for better results
         query = f"{station_name} Algeria"
         url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=1"
         
-        # Make the API request
         response = requests.get(url, headers={'User-Agent': 'SNTF-Data-Extractor'})
         response.raise_for_status()
         
@@ -39,7 +38,6 @@ def geocode_station(station_name):
         print(f"Geocoding failed for {station_name}: {e}")
         return None
 
-# Station Extraction Agent using Gemini 2.0 Flash
 station_extraction_agent = Agent(
     name="SNTF Station Extraction Agent",
     role="Extract station names from SNTF schedule images using Gemini 2.0 Flash",
@@ -109,7 +107,6 @@ station_extraction_agent = Agent(
     markdown=True,
 )
 
-# Unified SNTF Data Processing Agent
 unified_sntf_agent = Agent(
     name="SNTF Data Processing Agent",
     role="Process extracted stations and create complete railway data with geocoding",
@@ -206,14 +203,14 @@ def structure_station_data(geocoded_stations):
     
     for line_name, stations in geocoded_stations.items():
         for station in stations:
-            # Create proper placeInDb structure
             station_data = {
-                "id": station['id'],  # Already has proper UUID
+                "id": station['id'], 
                 "name": station['name'],
                 "coordinates": station['coordinates'],
                 "type": station['type'],
                 "region": station['region']
             }
+            
             structured_data.append(station_data)
     
     return structured_data
@@ -241,15 +238,28 @@ def clean_json_response(response_content):
     except Exception as e:
         print(f"Error cleaning JSON response: {e}")
         return response_content
+async def run():
+    try:
+        check:bool=checkconflict()
+        if check:
+            print("conflict")
+            getchange()
+        else:
+            print("no conflict")
+    except Exception as e:
+        print(f"Error checking conflict: {e}")
+        
+          
 
+            
+    
 if __name__ == "__main__":
     try:
-        # Download images first
+        asyncio.sleep(100000000000)
         print("Downloading SNTF schedule images...")
         downloaded_files = download_sntf_images()
         
         if downloaded_files:
-            # Step 1: Extract station names using Gemini 2.0 Flash
             print("Extracting station names from images...")
             station_extraction_response = station_extraction_agent.run(
                 """Extract ALL station names from the provided SNTF schedule images.
@@ -281,9 +291,7 @@ if __name__ == "__main__":
             print(f"Response length: {len(station_extraction_response.content)}")
             print("="*50 + "\n")
             
-            # Step 2: Clean and parse extracted station names
             try:
-                # Clean the response to remove markdown code blocks
                 cleaned_content = clean_json_response(station_extraction_response.content)
                 
                 print("\n" + "-"*30)
@@ -292,12 +300,10 @@ if __name__ == "__main__":
                 print(f"Cleaned content: {cleaned_content[:500]}...")
                 print("-"*30 + "\n")
                 
-                # Parse the cleaned JSON
                 station_data = json.loads(cleaned_content)
                 print(f"✓ Successfully parsed JSON")
                 print(f"Extracted stations: {station_data}")
                 
-                # LOG: Detailed analysis of extracted data
                 print("\n" + "-"*30)
                 print("EXTRACTED DATA ANALYSIS:")
                 print("-"*30)
@@ -315,7 +321,6 @@ if __name__ == "__main__":
                 print(f"✗ Failed to parse station extraction response as JSON: {e}")
                 print(f"Raw content: {station_extraction_response.content[:500]}...")
                 
-                # Try to extract data manually if JSON parsing fails
                 content = station_extraction_response.content
                 print("\n" + "-"*30)
                 print("MANUAL EXTRACTION ATTEMPT:")
@@ -339,7 +344,6 @@ if __name__ == "__main__":
                 print(f"✗ Unexpected error parsing response: {e}")
                 station_data = {}
             
-            # LOG: Check if we have any data to process
             if not station_data:
                 print("⚠️  WARNING: No station data extracted. Cannot proceed with geocoding.")
                 print("This could be due to:")
@@ -364,7 +368,6 @@ if __name__ == "__main__":
                 
                 exit()
             
-            # Step 3: Geocode stations using OpenStreetMap API
             print("Geocoding stations using OpenStreetMap API...")
             geocoded_stations = {}
             total_stations = 0
@@ -402,18 +405,15 @@ if __name__ == "__main__":
             
             print(f"\nTotal stations geocoded: {total_stations}")
 
-            # Step 4: Structure final data directly (without problematic agent)
             print("Structuring final data...")
             structured_stations = structure_station_data(geocoded_stations)
             
-            # Step 5: Save to file
             print("Saving station data to file...")
             
-            # Save the complete data with metadata
             final_data = {
                 "metadata": {
                     "source": "SNTF Schedule Images",
-                    "extraction_date": str(uuid.uuid4()),  # Use timestamp if needed
+                    "extraction_date": str(uuid.uuid4()),  
                     "total_stations": len(structured_stations),
                     "lines": list(geocoded_stations.keys())
                 },
@@ -421,10 +421,8 @@ if __name__ == "__main__":
                 "raw_geocoded_data": geocoded_stations
             }
             
-            # Save to JSON file
             saved_file = save_stations_to_file(final_data, "sntf_stations_complete.json")
             
-            # Also save just the structured stations for placeInDb compatibility
             placeInDb_compatible = {
                 "stations": structured_stations
             }
@@ -434,7 +432,6 @@ if __name__ == "__main__":
             print(f"Total stations processed: {len(structured_stations)}")
             print(f"Lines processed: {list(geocoded_stations.keys())}")
             
-            # Print sample data for verification
             if structured_stations:
                 print("\nSample station data:")
                 sample_station = structured_stations[0]
