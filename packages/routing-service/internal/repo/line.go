@@ -12,147 +12,77 @@ type LineRepo struct {
 	db *gorm.DB
 }
 
-func NewLineRepo(db *gorm.DB) models.LigneRepo {
+func NewLineRepo(db *gorm.DB) models.LineRepo {
 	return &LineRepo{db: db}
 }
 
-func (r *LineRepo) GetAll() (models.Lignes, error) {
-	var lines []models.Ligne
+func (r *LineRepo) GetAll() (models.Lines, error) {
+	var lines []models.Line
 	err := r.db.Find(&lines).Error
 	return lines, err
 }
 
-func (r *LineRepo) GetByID(id uuid.UUID) (models.Ligne, error) {
-	var line models.Ligne
+func (r *LineRepo) GetByID(id uuid.UUID) (models.Line, error) {
+	var line models.Line
 	err := r.db.Where("id = ?", id).First(&line).Error
 	return line, err
 }
 
-func (r *LineRepo) GetByType(typee string) (models.Lignes, error) {
-	var lines []models.Ligne
+func (r *LineRepo) GetByType(typee string) (models.Lines, error) {
+	var lines []models.Line
 	err := r.db.Where("type = ?", typee).Find(&lines).Error
 	return lines, err
 }
 
-func (r *LineRepo) GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (models.Lignes, error) {
+func (r *LineRepo) GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (models.Lines, error) {
 	// Find lines that serve both stations
-	var lines []models.Ligne
+	var lines []models.Line
 	err := r.db.Preload("Stations").
-		Joins("JOIN stops s1 ON lignes.id = s1.line_id").
-		Joins("JOIN stops s2 ON lignes.id = s2.line_id").
+		Joins("JOIN stops s1 ON lines.id = s1.line_id").
+		Joins("JOIN stops s2 ON lines.id = s2.line_id").
 		Where("s1.station_id = ? AND s2.station_id = ?", startID, endID).
 		Find(&lines).Error
 
 	return lines, err
 }
 
-func (r *LineRepo) GetStopsForLine(lineID uuid.UUID) (models.LigneStops, error) {
-	var stops []models.LigneStop
+func (r *LineRepo) GetStopsForLine(lineID uuid.UUID) ([]models.Stop, error) {
+	var stops []models.Stop
 	err := r.db.Preload("Station").
-		Where("route_id = ?", lineID).
+		Where("line_id = ?", lineID).
 		Order("sequence").
 		Find(&stops).Error
 	return stops, err
 }
 
-// LegacyLineRepoWrapper provides compatibility with the old LineRepo interface
-type LegacyLineRepoWrapper struct {
-	repo models.LigneRepo
+// Enhanced methods for safety filtering and payment methods
+func (r *LineRepo) GetLinesWithSafetyFilter(minSafetyRating float64) (models.Lines, error) {
+	var lines []models.Line
+	err := r.db.Where("safety_rating >= ?", minSafetyRating).Find(&lines).Error
+	return lines, err
 }
 
-func NewLegacyLineRepoWrapper(db *gorm.DB) models.LineRepo {
-	return &LegacyLineRepoWrapper{
-		repo: NewLineRepo(db),
-	}
+func (r *LineRepo) UpdateLineSafetyRating(lineID uuid.UUID, rating float64) error {
+	return r.db.Model(&models.Line{}).
+		Where("id = ?", lineID).
+		Update("safety_rating", rating).Error
 }
 
-func (r *LegacyLineRepoWrapper) GetAll() (models.Lines, error) {
-	lignes, err := r.repo.GetAll()
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert Lignes to Lines
-	lines := make(models.Lines, len(lignes))
-	for i, ligne := range lignes {
-		lines[i] = models.Line{
-			ID:     ligne.ID,
-			Name:   ligne.Name,
-			Type:   ligne.Type,
-			Agency: "", // Agency field not available in lignes table
-		}
-	}
-	return lines, nil
+func (r *LineRepo) GetLinesByPaymentMethod(paymentMethods []string) (models.Lines, error) {
+	var lines []models.Line
+	// Use PostgreSQL array overlap operator to check if any payment method matches
+	err := r.db.Where("payment_methods && ?", "{"+joinStrings(paymentMethods, ",")+"}").Find(&lines).Error
+	return lines, err
 }
 
-func (r *LegacyLineRepoWrapper) GetByID(id uuid.UUID) (models.Line, error) {
-	ligne, err := r.repo.GetByID(id)
-	if err != nil {
-		return models.Line{}, err
+// Helper function to join strings
+func joinStrings(strs []string, sep string) string {
+	if len(strs) == 0 {
+		return ""
 	}
-
-	return models.Line{
-		ID:     ligne.ID,
-		Name:   ligne.Name,
-		Type:   ligne.Type,
-		Agency: "", // Agency field not available in lignes table
-	}, nil
-}
-
-func (r *LegacyLineRepoWrapper) GetByType(typee string) (models.Lines, error) {
-	lignes, err := r.repo.GetByType(typee)
-	if err != nil {
-		return nil, err
+	result := strs[0]
+	for _, s := range strs[1:] {
+		result += sep + s
 	}
-
-	// Convert Lignes to Lines
-	lines := make(models.Lines, len(lignes))
-	for i, ligne := range lignes {
-		lines[i] = models.Line{
-			ID:     ligne.ID,
-			Name:   ligne.Name,
-			Type:   ligne.Type,
-			Agency: "", // Agency field not available in lignes table
-		}
-	}
-	return lines, nil
-}
-
-func (r *LegacyLineRepoWrapper) GetRouteBetweenStations(ctx context.Context, startID, endID uuid.UUID) (models.Lines, error) {
-	lignes, err := r.repo.GetRouteBetweenStations(ctx, startID, endID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert Lignes to Lines
-	lines := make(models.Lines, len(lignes))
-	for i, ligne := range lignes {
-		lines[i] = models.Line{
-			ID:     ligne.ID,
-			Name:   ligne.Name,
-			Type:   ligne.Type,
-			Agency: "", // Agency field not available in lignes table
-		}
-	}
-	return lines, nil
-}
-
-func (r *LegacyLineRepoWrapper) GetStopsForLine(lineID uuid.UUID) ([]models.Stop, error) {
-	ligneStops, err := r.repo.GetStopsForLine(lineID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert LigneStops to []Stop
-	stops := make([]models.Stop, len(ligneStops))
-	for i, ligneStop := range ligneStops {
-		stops[i] = models.Stop{
-			ID:        ligneStop.ID,
-			LineID:    ligneStop.RouteID, // Map RouteID to LineID
-			StationID: ligneStop.StationID,
-			Sequence:  ligneStop.Sequence,
-			Station:   ligneStop.Station,
-		}
-	}
-	return stops, nil
+	return result
 }
