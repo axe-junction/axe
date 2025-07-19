@@ -1,87 +1,325 @@
+# Axe Server - Microservices Docker Setup
 
-# AXE
+This repository contains a complete microservices architecture for the Axe transport management system with a **database-per-service** pattern for better isolation and scalability.
 
-This repository contains the source code and documentation for a distributed system designed for real-time route calculation and dynamic pricing. It's built on a microservices architecture, leveraging event-driven patterns for high scalability and resilience.
+## Architecture
 
-## System Architecture
+### Services
 
-The core of our system is represented by the following diagram. It illustrates the flow of data for both live user requests and asynchronous background data updates.
+- **Routing Service** (Port 3001) - Journey planning and route optimization
+- **VTC Service** (Port 8080) - Vehicle for hire service
+- **Data API** (Port 8000) - FastAPI service for data operations
 
-## Core Concepts
+### Databases (One per Service)
 
-This system is designed around a few key architectural principles:
+- **Routing DB** (Port 5432) - PostgreSQL with PostGIS for routing service
+- **VTC DB** (Port 5433) - PostgreSQL for VTC service data
+- **Data DB** (Port 5434) - PostgreSQL for data service operations
 
-  * **Microservices:** Each major function (Routing, Pricing, Data Sync) is a separate, independently deployable service. This allows for easier development, scaling, and maintenance.
-  * **API Gateway:** The `Router Service` acts as a single entry point for all client applications (Frontend & Mobile). This simplifies the client-side code and centralizes concerns like authentication and rate-limiting.
-  * **Event-Driven Communication:** Services communicate asynchronously using a message broker (`RabbitMQ`) for discrete events and a streaming platform (`Apache Kafka`) for high-throughput data streams. This decouples the services and makes the system more resilient to individual service failures.
+### Development Tools
 
-## Component Breakdown
+- **PGAdmin** (Port 5050) - Database administration (development only)
+- **Nginx** (Port 80) - API Gateway (development proxy)
 
-  * ### 🚚 Data Sync Service
+## Quick Start
 
-    This service is the starting point for all system data. It uses a chain of agents to process input data (e.g., from CSV files), detect changes, and initiate the data update workflow by publishing an event.
+### Development Environment
 
-  * ### Gateway & Router Service
+```bash
+# Clone and setup
+git clone <repository-url>
+cd axe-server
 
-    This is the brain of the operation and has two primary responsibilities:
+# Setup environment file
+cp .env.example .env
 
-    1.  **API Gateway:** It exposes a public API for clients, handling incoming requests for routes and prices.
-    2.  **Routing Engine:** It integrates with **OSRM (Open Source Routing Machine)** to perform complex route calculations. It also consumes events from `RabbitMQ` to keep its own database up-to-date.
+# Start development services with hot reloading
+make dev
 
-  * ### 💰 Pricing Service (Go)
+# Or start in background
+make dev-detached
 
-    A dedicated microservice written in Go responsible for all pricing logic.
+# Initialize databases with schema and sample data
+make init-dbs
+```
 
-      * It exposes an internal API that the `Router Service` calls to get the price for a specific route.
-      * It asynchronously consumes data streams from `Apache Kafka` to update its own pricing models and cache, ensuring it always has fresh data without slowing down live requests.
+### Production Environment
 
-  * ### 📨 Messaging Infrastructure
-
-    The backbone of our asynchronous communication.
-
-      * **RabbitMQ:** Used for reliable, event-based messaging. It's perfect for sending commands or discrete notifications, like a "data has changed" event.
-      * **Apache Kafka:** Used for high-throughput data streaming. It's ideal for broadcasting data updates to multiple consumers or for feeding analytics and machine learning systems.
-
-## System Workflows
-
-The diagram shows two primary workflows that happen concurrently:
-
-#### 1\. Live Request Flow (Synchronous)
-
-This is what happens when a user requests a route in the app.
-
-1.  The **Client App** sends a `GET /api/route` request to the **Router Service**.
-2.  The **Router Service** calculates the route using **OSRM**.
-3.  The **Router Service** calls the **Pricing Service's** internal API to get the price for that route.
-4.  The **Pricing Service** calculates and returns the price.
-5.  The **Router Service** combines the route and price into a single response and sends it back to the client.
-
-#### 2\. Background Data Flow (Asynchronous)
-
-This flow keeps the system's data fresh without interrupting users.
-
-1.  The **Data Sync Service** detects a change and publishes an event to **RabbitMQ**.
-2.  The **Router Service** consumes this event and updates its local database (e.g., new roads, traffic info).
-3.  After updating, the **Router Service** streams the relevant data changes to an **Apache Kafka** topic.
-4.  The **Pricing Service** (and any other interested services) consumes this stream to update its own internal data, models, or cache.
-#### 3\. System design
 ![alt text](image.png)
-## Technology Stack
-
-  * **Programming Languages:** Go (Pricing Service),fastapi(data service),typescript(front mobile)
-  * **Routing Engine:** OSRM
-  * **Message Broker:** RabbitMQ
-  * **Streaming Platform:** Apache Kafka
-  * **Databases:** *(sqlite, PostgreSQL, Redis)*
-  * **Clients:** Web ( React) and Mobile (react native)
 
 
+```bash
+# Start production services
+make prod
 
-1.  Clone the repository:
+# Start with monitoring
+make prod-with-monitoring
+```
 
-w the setup instructions for each service... (e.g., using Docker Compose)
-    ```bash
-    docker-compose up --build
-    ```
+## Database Management
 
------
+### Per-Service Database Commands
+
+```bash
+# Initialize all databases
+make init-dbs
+
+# Reset all databases (destructive)
+make reset-dbs
+
+# Backup all databases
+make backup-dbs
+
+# Connect to specific databases
+make connect-routing-db
+make connect-vtc-db
+make connect-data-db
+
+# View database logs
+make logs-routing-db
+make logs-vtc-db
+make logs-data-db
+```
+
+### PGAdmin Access
+
+In development mode, PGAdmin is available at:
+- **URL**: http://localhost:5050
+- **Email**: admin@axe.com
+- **Password**: admin
+
+All three databases are pre-configured in PGAdmin for easy access.
+
+## Available Commands
+
+Run `make help` to see all available commands:
+
+```bash
+make help
+```
+
+Key commands:
+- `make dev` - Start development environment
+- `make prod` - Start production environment
+- `make logs` - View all service logs
+- `make init-dbs` - Initialize all databases
+- `make reset-dbs` - Reset all databases
+- `make clean` - Clean up Docker resources
+
+## Service URLs
+
+After starting the services:
+
+### APIs
+- **Routing API**: http://localhost:3001
+- **VTC API**: http://localhost:8080
+- **Data API**: http://localhost:8000
+
+### Development Gateway (Nginx)
+- **API Gateway**: http://localhost (routes to all services)
+  - `/api/routing/` -> Routing Service
+  - `/api/vtc/` -> VTC Service
+  - `/api/data/` -> Data API
+
+### Databases (Development)
+- **Routing DB**: postgres://routing_user:routing_pass@localhost:5432/routing_db
+- **VTC DB**: postgres://vtc_user:vtc_pass@localhost:5433/vtc_db
+- **Data DB**: postgres://data_user:data_pass@localhost:5434/data_db
+
+### Management Tools
+- **PgAdmin**: http://localhost:5050 (development only)
+
+## Environment Configuration
+
+Copy `.env.example` to `.env` and modify as needed:
+
+```bash
+cp .env.example .env
+```
+
+The setup supports per-service database configuration:
+
+```bash
+# Routing Service Database
+ROUTING_DB_HOST=routing-db
+ROUTING_DB_USER=routing_user
+ROUTING_DB_PASSWORD=routing_pass
+ROUTING_DB_NAME=routing_db
+
+# VTC Service Database
+VTC_DB_HOST=vtc-db
+VTC_DB_USER=vtc_user
+VTC_DB_PASSWORD=vtc_pass
+VTC_DB_NAME=vtc_db
+
+# Data Service Database
+DATA_DB_HOST=data-db
+DATA_DB_USER=data_user
+DATA_DB_PASSWORD=data_pass
+DATA_DB_NAME=data_db
+```
+
+## Docker Profiles
+
+The setup supports different profiles for different use cases:
+
+### Core Services (default)
+```bash
+docker-compose up -d
+```
+
+### Development
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+### Production
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+### With Monitoring
+```bash
+docker-compose --profile monitoring up -d
+```
+
+### With Reverse Proxy
+```bash
+docker-compose --profile proxy up -d
+```
+
+### With Caching
+```bash
+docker-compose --profile cache up -d
+```
+
+## Health Checks
+
+All services include health checks. Check status with:
+
+```bash
+docker-compose ps
+# or
+make health
+```
+
+## Database Management
+
+### Connect to database
+```bash
+make db-shell
+```
+
+### Backup database
+```bash
+make backup-db
+```
+
+### Restore database
+```bash
+make restore-db FILE=backup_20240101_120000.sql
+```
+
+## Development Features
+
+### Hot Reloading
+
+Development environment includes hot reloading using [Air](https://github.com/cosmtrek/air):
+- Code changes automatically trigger rebuilds
+- No need to restart containers during development
+
+### Development Tools
+
+When running in development mode, additional tools are available:
+- PgAdmin at http://localhost:5050
+- Enhanced logging and debugging
+- Volume mounts for live code editing
+
+## Monitoring
+
+Enable monitoring with:
+
+```bash
+make prod-with-monitoring
+```
+
+This provides:
+- **Prometheus** - Metrics collection
+- **Grafana** - Metrics visualization
+- **Node Exporter** - System metrics
+- **cAdvisor** - Container metrics
+
+## Scaling
+
+Production compose includes scaling configuration:
+
+```bash
+# Scale routing service to 3 replicas
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --scale routing-service=3
+```
+
+## Troubleshooting
+
+### Check service logs
+```bash
+make logs
+make logs-routing
+make logs-vtc
+make logs-db
+```
+
+### Restart specific service
+```bash
+docker-compose restart routing-service
+```
+
+### Rebuild specific service
+```bash
+docker-compose up -d --build routing-service
+```
+
+### Clean everything and start fresh
+```bash
+make clean
+make dev
+```
+
+## API Testing
+
+Test the APIs with:
+
+```bash
+# Test routing service
+curl "http://localhost:3001/routing/best?fromLat=36.75&fromLng=3.05&toLat=36.76&toLng=3.06"
+
+# Test VTC service
+curl "http://localhost:8080/api/estimate"
+
+# Or use the make command
+make test-api
+```
+
+## Security Notes
+
+### For Production:
+
+1. **Change default passwords** in `.env` file
+2. **Use secrets management** for sensitive data
+3. **Enable TLS/SSL** for external access
+4. **Configure firewall rules** appropriately
+5. **Regular security updates** for base images
+
+### Network Security:
+
+Services communicate through isolated Docker networks. Only necessary ports are exposed to the host.
+
+## Contributing
+
+1. Create feature branch
+2. Make changes
+3. Test with `make test`
+4. Submit pull request
+
+## License
+
+[Your License Here]

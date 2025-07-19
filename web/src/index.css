@@ -12,6 +12,12 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* CSS Variables for consistent colors */
+  --primary-color: #6316db;
+  --secondary-color: #ffffff;
+  --primary-rgb: 99, 22, 219;
+  --secondary-rgb: 255, 255, 255;
 }
 
 * {
@@ -21,16 +27,189 @@
 body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background-color: #ffffff;
+  background-color: var(--secondary-color);
   color: #1f2937;
+}
+
+/* Override default root styles from App.css */
+#root {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Ensure full height layout */
 html,
-body,
-#root {
+body {
   height: 100%;
   overflow: hidden;
+}
+
+/* Fixed navbar with consistent styling */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background-color: var(--secondary-color) !important;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Ensure navbar content has proper background */
+.navbar * {
+  background-color: transparent;
+}
+
+.navbar .bg-white {
+  background-color: var(--secondary-color) !important;
+}
+
+/* Mobile menu background fix */
+.navbar .lg\:hidden > div,
+.navbar-mobile-menu {
+  background-color: var(--secondary-color) !important;
+}
+
+/* Page container with fixed navbar */
+.page-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-color);
+}
+
+/* Main content area - scrollable for non-home pages */
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  margin-top: 64px; /* Height of navbar */
+  background-color: #f9fafb; /* Light gray background for content */
+}
+
+.content-area.scrollable {
+  overflow-y: auto;
+}
+
+.content-area.non-scrollable {
+  overflow: hidden;
+  background-color: var(--secondary-color); /* White background for map */
+}
+
+/* Bottom navigation positioning */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background-color: var(--secondary-color) !important;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Mobile adjustments */
+@media (max-width: 1024px) {
+  .content-area {
+    margin-bottom: 80px; /* Height of bottom navigation */
+  }
+}
+
+/* Primary color utilities */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.border-primary {
+  border-color: var(--primary-color) !important;
+}
+
+.ring-primary {
+  --tw-ring-color: var(--primary-color) !important;
+}
+
+.bg-primary\/10 {
+  background-color: rgba(var(--primary-rgb), 0.1) !important;
+}
+
+.bg-primary\/5 {
+  background-color: rgba(var(--primary-rgb), 0.05) !important;
+}
+
+.hover\:bg-primary:hover {
+  background-color: var(--primary-color) !important;
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: rgba(var(--primary-rgb), 0.9) !important;
+}
+
+.hover\:text-primary:hover {
+  color: var(--primary-color) !important;
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--primary-color) !important;
+}
+
+/* Button styles with primary color */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border: 1px solid var(--primary-color);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: rgba(var(--primary-rgb), 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: #f9fafb;
+  border-color: var(--primary-color);
+}
+
+/* Card styles */
+.card {
+  background-color: var(--secondary-color);
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Input styles */
+.input-primary {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.input-primary:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
 }
 
 /* Navbar full width */
@@ -51,24 +230,6 @@ nav {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
 }
 
-/* Ensure content doesn't overflow */
-main {
-  height: calc(100vh - 64px); /* Subtract navbar height */
-  padding-bottom: 4px; /* Add small padding at bottom */
-}
-
-@media (max-width: 1024px) {
-  main {
-    height: calc(100vh - 64px - 80px); /* Subtract navbar and bottom nav */
-    padding-bottom: 8px; /* Add more padding on mobile */
-  }
-
-  /* On mobile, ensure map doesn't take full height */
-  .leaflet-container {
-    max-height: calc(50vh - 2rem);
-  }
-}
-
 /* Map container constraints */
 .map-container {
   min-height: 300px;
@@ -84,7 +245,7 @@ main {
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with primary color accent */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -94,25 +255,26 @@ main {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(var(--primary-rgb), 0.3);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(var(--primary-rgb), 0.5);
 }
 
 /* Leaflet routing machine styles */
 .leaflet-routing-container {
-  display: none !important; /* Hide the routing instructions panel */
+  display: none !important;
 }
 
 .leaflet-routing-alternatives-container {
-  display: none !important; /* Hide alternative routes */
+  display: none !important;
 }
 
-/* Ensure route lines are properly styled and visible */
+/* Route lines with primary color */
 .leaflet-routing-line {
+  stroke: var(--primary-color) !important;
   stroke-width: 6 !important;
   stroke-opacity: 1 !important;
   stroke-linecap: round !important;
@@ -122,54 +284,42 @@ main {
   pointer-events: none !important;
 }
 
-/* Route line hover effects */
 .leaflet-routing-line:hover {
   stroke-width: 8 !important;
 }
 
-/* Ensure routing control lines are visible */
 .leaflet-routing-container-hide {
   display: none !important;
 }
 
-/* Override any conflicting styles */
 .leaflet-overlay-pane svg path {
   pointer-events: none !important;
 }
 
-/* Ensure polylines are always visible */
 .leaflet-interactive {
   cursor: pointer;
 }
 
-/* Make sure route polylines are rendered above other elements */
 .leaflet-overlay-pane svg {
   z-index: 1000 !important;
 }
 
-/* Ensure route visibility */
 .leaflet-routing-line,
 .leaflet-routing-shadow {
   pointer-events: none !important;
   display: block !important;
 }
 
-/* Force polyline visibility */
 .leaflet-overlay-pane path {
   display: block !important;
 }
 
-/* Custom transitions */
-.transition-all {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Loading spinner */
+/* Loading spinner with primary color */
 .spinner {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f4f6;
-  border-top: 4px solid #6316db;
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -183,17 +333,10 @@ main {
   }
 }
 
-/* Focus styles */
+/* Focus styles with primary color */
 .focus-visible {
-  outline: 2px solid #6316db;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
-}
-
-/* Print styles */
-@media print {
-  .no-print {
-    display: none !important;
-  }
 }
 
 /* Navbar styles */
@@ -201,22 +344,14 @@ main {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-in-out;
+  background-color: var(--secondary-color) !important;
 }
 
 .navbar-mobile-menu.open {
   max-height: 400px;
 }
 
-/* Ensure proper z-index layering */
-.navbar {
-  z-index: 30;
-}
-
-.mobile-menu-overlay {
-  z-index: 35;
-}
-
-/* Smooth transitions for mobile menu */
+/* Mobile menu transitions */
 .mobile-menu-enter {
   opacity: 0;
   transform: translateY(-10px);
@@ -239,46 +374,69 @@ main {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Ensure content doesn't overlap with navbar */
-@media (min-width: 1024px) {
-  .main-content {
-    padding-top: 0;
-  }
+/* Search suggestions styling */
+.search-suggestions {
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: var(--secondary-color);
 }
 
-/* Add bottom spacing for mobile MapView */
+.search-suggestion-item {
+  transition: background-color 0.15s ease;
+  background-color: var(--secondary-color);
+}
+
+.search-suggestion-item:hover {
+  background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.search-suggestion-item:active {
+  background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+/* Search dropdown */
+.search-dropdown {
+  z-index: 1000;
+  background-color: var(--secondary-color);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom transitions */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Enhanced button hover effects */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Route options panel styling */
 @media (max-width: 1024px) {
   .mapview-container {
     padding-bottom: 1rem;
   }
 
-  /* Ensure route options panel has proper spacing */
   .route-options-panel {
     margin-bottom: 1rem;
     border-radius: 0.5rem;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    background-color: var(--secondary-color);
   }
 }
 
-/* Search suggestions styling */
-.search-suggestions {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.search-suggestion-item {
-  transition: background-color 0.15s ease;
-}
-
-.search-suggestion-item:hover {
-  background-color: #f9fafb;
-}
-
-.search-suggestion-item:active {
-  background-color: #f3f4f6;
-}
-
-/* Ensure proper z-index for search dropdowns */
-.search-dropdown {
-  z-index: 1000;
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

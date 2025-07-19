@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import BottomNavigation from "./BottomNavigation";
 import Navbar from "./Navbar";
 
@@ -7,10 +8,19 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
   return (
-    <div className="h-screen flex flex-col bg-white">
+    <div className="page-container">
       <Navbar />
-      <main className="flex-1 overflow-hidden">{children}</main>
+      <main
+        className={`content-area ${
+          isHomePage ? "non-scrollable" : "scrollable"
+        }`}
+      >
+        {children}
+      </main>
       <BottomNavigation />
     </div>
   );

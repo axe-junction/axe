@@ -5,7 +5,6 @@ import SearchPage from "./pages/SearchPage";
 import CommunityPage from "./pages/CommunityPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import ProfilePage from "./pages/ProfilePage";
-import "./App.css";
 
 function App() {
   return (

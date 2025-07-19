@@ -1,152 +1,89 @@
-import { Link, useLocation } from "react-router-dom";
-import { Map, Search, Users, Heart, User, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { useAppStore } from "../store/useAppStore";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 
 const navItems = [
-  { path: "/", icon: Map, label: "Map" },
-  { path: "/search", icon: Search, label: "Search" },
-  { path: "/community", icon: Users, label: "Community" },
-  { path: "/favorites", icon: Heart, label: "Favorites" },
-  { path: "/profile", icon: User, label: "Profile" },
+  { path: "/", label: "Map" },
+  { path: "/search", label: "Search" },
+  { path: "/community", label: "Community" },
+  { path: "/favorites", label: "Favorites" },
+  { path: "/profile", label: "Profile" },
 ];
 
 export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const { user } = useAppStore();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <>
-      {/* Desktop Navbar */}
-      <nav
-        className="hidden lg:block shadow-lg w-full"
-        style={{ backgroundColor: "#6316DB" }}
-      >
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <img src="/logo_white.png" alt="Logo" className="w-8 h-8" />
-                </div>
-                <span className="text-xl font-bold text-white">Axe</span>
-              </Link>
-            </div>
+    <nav className="navbar">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 group">
+            <img
+              src="/logo_long.svg"
+              width={114}
+              alt="Axe Logo"
+              className="text-primary group-hover:scale-110 transition-transform"
+            />
+          </Link>
 
-            {/* Navigation Links */}
-            <div className="flex items-center space-x-2">
-              {navItems.map(({ path, icon: Icon, label }) => {
-                const isActive = location.pathname === path;
-                return (
-                  <Link
-                    key={path}
-                    to={path}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                      isActive
-                        ? "bg-white shadow-sm"
-                        : "text-white hover:bg-white/10"
-                    }`}
-                    style={isActive ? { color: "#6316DB" } : { color: "white" }}
-                  >
-                    <Icon size={20} />
-                    <span className="font-medium">{label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* User Profile */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3 text-white">
-                <img
-                  src={
-                    user?.avatar ||
-                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"
-                  }
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover border-2 border-white/20"
-                />
-                <span className="text-sm font-medium">
-                  {user?.name || "Guest"}
-                </span>
-              </div>
-            </div>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-2">
+            {navItems.map(({ path, label }) => {
+              const isActive = location.pathname === path;
+              return (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "text-primary bg-primary/10 shadow-sm"
+                      : "text-gray-700 hover:text-primary hover:bg-primary/5"
+                  }`}
+                >
+                  {label}
+                </Link>
+              );
+            })}
           </div>
-        </div>
-      </nav>
 
-      {/* Mobile Navbar */}
-      <nav
-        className="lg:hidden shadow-lg w-full"
-        style={{ backgroundColor: "#6316DB" }}
-      >
-        <div className="px-4">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <Map size={20} style={{ color: "#6316DB" }} />
-              </div>
-              <span className="text-xl font-bold text-white">Axe</span>
-            </Link>
-
-            {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
+          <div className="lg:hidden">
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-lg text-gray-700 hover:text-primary hover:bg-primary/5 transition-all"
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div
-            className="border-t border-white/20"
-            style={{ backgroundColor: "#6316DB" }}
-          >
-            <div className="px-4 py-2 space-y-1">
-              {navItems.map(({ path, icon: Icon, label }) => {
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="lg:hidden bg-white">
+            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200">
+              {navItems.map(({ path, label }) => {
                 const isActive = location.pathname === path;
                 return (
                   <Link
                     key={path}
                     to={path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-all ${
                       isActive
-                        ? "bg-white shadow-sm"
-                        : "text-white hover:bg-white/10"
+                        ? "text-primary bg-primary/10"
+                        : "text-gray-700 hover:text-primary hover:bg-primary/5"
                     }`}
-                    style={isActive ? { color: "#6316DB" } : { color: "white" }}
                   >
-                    <Icon size={20} />
-                    <span className="font-medium">{label}</span>
+                    {label}
                   </Link>
                 );
               })}
-
-              {/* User Profile in Mobile Menu */}
-              <div className="flex items-center space-x-3 px-3 py-3 border-t border-white/20 mt-2">
-                <img
-                  src={
-                    user?.avatar ||
-                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face"
-                  }
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover border-2 border-white/20"
-                />
-                <span className="text-sm font-medium text-white">
-                  {user?.name || "Guest"}
-                </span>
-              </div>
             </div>
           </div>
         )}
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }

@@ -891,8 +891,8 @@ export default function MapView() {
           </div>
         )}
 
-        {/* Map Container - Adjusted height with bottom padding */}
-        <div className="h-[calc(50vh-2rem)] lg:flex-1 relative mb-4 lg:mb-0">
+        {/* Map Container - Full height on desktop, adjusted on mobile */}
+        <div className="h-[calc(50vh-2rem)] lg:h-full relative mb-4 lg:mb-0">
           <MapContainer
             center={mapCenter}
             zoom={12}
@@ -990,7 +990,7 @@ export default function MapView() {
               />
               <input
                 type="text"
-                placeholder="Where do you want to go? (e.g., Alger Centre, Airport...)"
+                placeholder="Where do you want to go?"
                 value={destinationQuery}
                 onChange={(e) => handleDestinationSearch(e.target.value)}
                 onFocus={() => setShowDestinationSuggestions(true)}
@@ -999,7 +999,7 @@ export default function MapView() {
                 }
                 className="w-full pl-10 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-base"
               />
-              <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 flex gap-1">
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

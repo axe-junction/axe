@@ -129,7 +129,7 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="p-4 flex items-center justify-between">

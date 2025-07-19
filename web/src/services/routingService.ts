@@ -1,4 +1,3 @@
-import L from "leaflet";
 import "leaflet-routing-machine";
 
 interface RoutePoint {
@@ -418,8 +417,6 @@ export class RoutingService {
     path: RoutePoint[],
     transportType: string
   ): string[] {
-    const instructions: string[] = [];
-
     const transportInstructions = {
       metro: [
         "Walk to nearest metro station",
