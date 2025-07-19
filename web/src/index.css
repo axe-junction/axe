@@ -224,17 +224,112 @@ nav {
 }
 
 /* Fix leaflet map height issues */
+/* Leaflet map styling - Enhanced dark gray theme */
 .leaflet-container {
   height: 100% !important;
   width: 100% !important;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: #e5e7eb !important;
 }
 
-/* Map container constraints */
+/* Enhanced gray map theme with better contrast */
+.leaflet-tile {
+  filter: grayscale(15%) brightness(0.85) contrast(1.15) saturate(0.8) !important;
+  opacity: 0.95 !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: white !important;
+  color: #374151 !important;
+  border: 2px solid #d1d5db !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  font-weight: 600 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #f9fafb !important;
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.leaflet-control-attribution {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #4b5563 !important;
+  font-size: 11px !important;
+  padding: 3px 6px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Enhanced marker visibility */
+.leaflet-marker-icon {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: white !important;
+  color: #1f2937 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  border: 2px solid #f3f4f6 !important;
+}
+
+.leaflet-popup-tip {
+  background-color: white !important;
+  border: 2px solid #f3f4f6 !important;
+}
+
+/* Enhanced route line styling for better visibility */
+.leaflet-routing-line {
+  stroke: var(--primary-color) !important;
+  stroke-width: 10 !important;
+  stroke-opacity: 0.95 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+  stroke-dasharray: none !important;
+  pointer-events: none !important;
+  filter: drop-shadow(0 3px 6px rgba(99, 22, 219, 0.4)) !important;
+}
+
+.leaflet-routing-line:hover {
+  stroke-width: 12 !important;
+  stroke-opacity: 1 !important;
+}
+
+/* Enhanced map controls styling */
+.leaflet-control {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-bar {
+  border: 2px solid #d1d5db !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.leaflet-bar a {
+  border-bottom: 2px solid #e5e7eb !important;
+  transition: all 0.2s ease !important;
+}
+
+.leaflet-bar a:last-child {
+  border-bottom: none !important;
+}
+
+/* Map container with enhanced styling */
 .map-container {
   min-height: 300px;
   max-height: 70vh;
   margin-bottom: 1rem;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 3px solid #d1d5db !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
 }
 
 @media (min-width: 1024px) {
@@ -242,7 +337,116 @@ nav {
     max-height: none;
     height: 100%;
     margin-bottom: 0;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
   }
+}
+
+/* Enhanced overlay styling */
+.leaflet-overlay-pane svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15)) !important;
+}
+
+/* Enhanced polyline visibility */
+.leaflet-interactive {
+  cursor: pointer;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2)) !important;
+}
+
+/* Enhanced mobile map styling */
+@media (max-width: 1024px) {
+  .mapview-container .leaflet-container {
+    border-radius: 16px !important;
+    border: 3px solid #d1d5db !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* Route paths with enhanced contrast */
+.leaflet-overlay-pane path {
+  stroke-width: 10px !important;
+  stroke-opacity: 0.95 !important;
+  filter: drop-shadow(0 3px 8px rgba(99, 22, 219, 0.4)) !important;
+}
+
+/* Custom marker styling for enhanced theme */
+.custom-marker {
+  background-color: var(--primary-color) !important;
+  border: 4px solid white !important;
+  border-radius: 50% !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Enhanced tile contrast */
+.leaflet-tile-container {
+  opacity: 1 !important;
+}
+
+/* Smooth tile loading */
+.leaflet-tile {
+  transition: opacity 0.3s ease-in-out !important;
+}
+
+.leaflet-tile-loaded {
+  opacity: 1 !important;
+}
+
+/* Enhanced road visibility */
+.leaflet-overlay-pane {
+  filter: contrast(1.1) !important;
+}
+
+/* Better street name visibility */
+.leaflet-overlay-pane text {
+  fill: #374151 !important;
+  stroke: white !important;
+  stroke-width: 2px !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Enhanced zoom control styling */
+.leaflet-control-zoom {
+  margin: 16px !important;
+}
+
+.leaflet-control-zoom a {
+  width: 40px !important;
+  height: 40px !important;
+  line-height: 36px !important;
+  font-size: 18px !important;
+}
+
+/* Attribution styling */
+.leaflet-control-attribution {
+  margin: 8px !important;
+}
+
+/* Enhanced polyline for different route types */
+.route-metro {
+  stroke: #3b82f6 !important;
+  stroke-dasharray: 5, 5 !important;
+}
+
+.route-bus {
+  stroke: #10b981 !important;
+  stroke-dasharray: 10, 5 !important;
+}
+
+.route-tram {
+  stroke: #f59e0b !important;
+  stroke-dasharray: 15, 5 !important;
+}
+
+.route-vtc {
+  stroke: #8b5cf6 !important;
+  stroke-dasharray: none !important;
+}
+
+.route-walking {
+  stroke: #6b7280 !important;
+  stroke-dasharray: 2, 2 !important;
 }
 
 /* Custom scrollbar with primary color accent */
