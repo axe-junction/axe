@@ -31,13 +31,11 @@ func (r *StationRepo) GetByID(id string) ([]models.Station, error) {
 }
 
 func (r *StationRepo) GetNearby(lat, lng float64, radius ...int) ([]models.Station, error) {
-	// Use default radius of 1000m if not specified
 	searchRadius := 1000
 	if len(radius) > 0 {
 		searchRadius = radius[0]
 	}
 
-	// Calculate approximate bounding box
 	const kmPerDegree = 111.0
 	latDelta := float64(searchRadius) / (kmPerDegree * 1000)
 	lngDelta := float64(searchRadius) / (kmPerDegree * 1000 * math.Cos(lat*math.Pi/180))
@@ -48,4 +46,10 @@ func (r *StationRepo) GetNearby(lat, lng float64, radius ...int) ([]models.Stati
 		Find(&stations).Error
 
 	return stations, err
+}
+func (r *StationRepo) Update(station *models.Station) error {
+	return r.db.Save(station).Error
+}
+func (r *StationRepo) Create(station *models.Station) error {
+	return r.db.Create(station).Error
 }

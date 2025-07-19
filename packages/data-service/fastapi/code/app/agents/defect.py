@@ -11,7 +11,6 @@ class DefectAlgo:
     async def initialize() -> None:
         if DefectAlgo.rabbitmq is None or DefectAlgo.rabbitmq.is_closed:
             DefectAlgo.rabbitmq = await aio_pika.connect("amqp://guest:guest@localhost/")
-        print("✅ RabbitMQ connection established")
 
     @staticmethod
     def is_conflicting(local: placeCreate, remote: placeCreate) -> bool:
@@ -40,7 +39,6 @@ class DefectAlgo:
     @staticmethod
     async def getchange() -> None:
         if not hasattr(DefectAlgo, "_conflicts") or not DefectAlgo._conflicts:
-            print("ℹ️ No conflicts to publish")
             return
 
         channel = await DefectAlgo.rabbitmq.channel()

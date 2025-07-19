@@ -256,6 +256,7 @@ async def run(data:placeCreate):
 if __name__ == "__main__":
     try:
         asyncio.sleep(100000000000)
+        asyncio.run(run())
         print("Downloading SNTF schedule images...")
         downloaded_files = download_sntf_images()
         
