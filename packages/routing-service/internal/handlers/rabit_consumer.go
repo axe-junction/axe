@@ -27,13 +27,13 @@ type RabitConsumer struct {
 	conn    *amqp091.Connection
 	channel *amqp091.Channel
 	queue   amqp091.Queue
-	repo *repo.StationRepo
+	repo    *repo.StationRepo
 }
 
-func NewRabitConsumer() *RabitConsumer {
-	repo := repo.NewStationRepo(&gorm.DB{}) // Replace nil with actual DB connection if needed
+func NewRabitConsumer(db *gorm.DB) *RabitConsumer {
+	stationRepo := repo.NewStationRepo(db)
 	return &RabitConsumer{
-		repo: repo,
+		repo: stationRepo,
 	}
 }
 
@@ -54,12 +54,12 @@ func (r *RabitConsumer) Consume() error {
 		return fmt.Errorf("failed to open channel: %w", err)
 	}
 	r.queue, err = r.channel.QueueDeclare(
-		"placetopic", 
-		true,        
-		false,       
-		false,        
+		"placetopic",
+		true,
 		false,
-		nil,      
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare queue: %w", err)
@@ -67,12 +67,12 @@ func (r *RabitConsumer) Consume() error {
 
 	msgs, err := r.channel.Consume(
 		r.queue.Name,
-		"",    
-		true,  
-		false, 
+		"",
+		true,
 		false,
 		false,
-		nil,   
+		false,
+		nil,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to register consumer: %w", err)
@@ -89,15 +89,38 @@ func (r *RabitConsumer) Consume() error {
 
 			if conflict.Type == "conflict" {
 				for _, change := range conflict.Payload {
-					r.repo.Update(&models.Station{
-	                     ID: uuid.MustParse(change.ID),	
-						Name: change.Local["name"].(string),
-						Latitude: change.Local["latitude"].(float64),
-						Longitude: change.Local["longitude"].(float64),
-						// Address: change.Local["address"].(),
-						Address: change.Local["address"].(models.Station),
-					},
-					)	
+					// Helper function to safely extract values from interface{}
+					getStringValue := func(key string) string {
+						if val, ok := change.Local[key]; ok && val != nil {
+							if str, ok := val.(string); ok {
+								return str
+							}
+						}
+						return ""
+					}
+
+					getFloat64Value := func(key string) float64 {
+						if val, ok := change.Local[key]; ok && val != nil {
+							if f, ok := val.(float64); ok {
+								return f
+							}
+						}
+						return 0.0
+					}
+
+					station := &models.Station{
+						ID:        uuid.MustParse(change.ID),
+						Name:      getStringValue("name"),
+						Latitude:  getFloat64Value("latitude"),
+						Longitude: getFloat64Value("longitude"),
+						Type:      getStringValue("type"),
+					}
+
+					if err := r.repo.Update(station); err != nil {
+						log.Printf("Failed to update station %s: %v\n", change.ID, err)
+					} else {
+						log.Printf("Successfully updated station %s\n", change.ID)
+					}
 				}
 			} else {
 				log.Printf("ℹ Unknown message type: %s\n", conflict.Type)
@@ -106,6 +129,6 @@ func (r *RabitConsumer) Consume() error {
 	}()
 
 	log.Println(" Waiting for messages. Press Ctrl+C to exit.")
-	<-make(chan struct{}) 
+	<-make(chan struct{})
 	return nil
 }
