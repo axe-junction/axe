@@ -88,6 +88,7 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Production monitoring and alerting
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
