@@ -108,13 +108,16 @@ function RoutingMachine({
   start,
   end,
   onRouteFound,
+  shouldFitBounds = true,
 }: {
   start: { lat: number; lng: number } | null;
   end: { lat: number; lng: number } | null;
   onRouteFound: (route: RouteData) => void;
+  shouldFitBounds?: boolean;
 }) {
   const map = useMap();
   const routingControlRef = useRef<L.Routing.Control | null>(null);
+  const hasFittedBoundsRef = useRef(false);
 
   useEffect(() => {
     if (!start || !end) {
@@ -123,6 +126,7 @@ function RoutingMachine({
         map.removeControl(routingControlRef.current);
         routingControlRef.current = null;
       }
+      hasFittedBoundsRef.current = false;
       return;
     }
 
@@ -130,6 +134,9 @@ function RoutingMachine({
     if (routingControlRef.current) {
       map.removeControl(routingControlRef.current);
     }
+
+    // Reset the bounds fitting flag when start/end changes
+    hasFittedBoundsRef.current = false;
 
     // Create new routing control with proper styling
     const routingControl = L.Routing.control({
@@ -184,9 +191,12 @@ function RoutingMachine({
 
         onRouteFound(routeData);
 
-        // Fit map to route bounds with padding
-        const bounds = L.latLngBounds(route.coordinates);
-        map.fitBounds(bounds, { padding: [50, 50] });
+        // Only fit bounds once when the route is first calculated, not on subsequent renders
+        if (shouldFitBounds && !hasFittedBoundsRef.current) {
+          const bounds = L.latLngBounds(route.coordinates);
+          map.fitBounds(bounds, { padding: [50, 50] });
+          hasFittedBoundsRef.current = true;
+        }
       }
     });
 
@@ -203,7 +213,7 @@ function RoutingMachine({
         routingControlRef.current = null;
       }
     };
-  }, [map, start, end, onRouteFound]);
+  }, [map, start, end, onRouteFound, shouldFitBounds]);
 
   return null;
 }
@@ -233,6 +243,7 @@ export default function MapView() {
   const [routeOptions, setRouteOptions] = useState<RouteOption[]>([]);
   const [selectedRouteOption, setSelectedRouteOption] =
     useState<RouteOption | null>(null);
+  const [shouldFitBounds, setShouldFitBounds] = useState(true);
 
   // Get current position
   useEffect(() => {
@@ -531,30 +542,85 @@ export default function MapView() {
       });
     }
 
-    // Taxi/Ride option (realistic for Algiers)
-    if (baseDistance < 15) {
-      const taxiTime = Math.max(15, Math.floor(baseDistance * 2.2)); // Faster than bus due to direct route
-      const taxiCost = Math.max(200, Math.floor(baseDistance * 80)); // Realistic taxi fare in DA
+    // VTC Options - Grouped into one card with realistic pricing
+    const vtcTime = Math.max(12, Math.floor(baseDistance * 2.0)); // VTC faster than bus due to direct route
 
-      options.push({
-        id: "taxi",
-        name: "Taxi",
-        duration: taxiTime,
-        cost: taxiCost,
-        transportModes: ["Taxi"],
-        description: isElHarrach
-          ? "Direct taxi ride via main roads"
-          : isCentre
-          ? "Quick taxi to city center"
-          : "Private, direct transport",
-        icon: Navigation2,
-        color: "bg-orange-500",
-        steps: [
-          "Call taxi or find taxi stand (3 min)",
-          `Direct ride to ${destination.name} (${taxiTime - 3} min)`,
-        ],
-      });
+    // Realistic VTC pricing based on actual data for specific destinations
+    let yassirCost: number;
+    let heetchCost: number;
+    let inDriveCost: number;
+    let vtcEta: number;
+
+    if (isElHarrach) {
+      // Pricing data for El Harrach (the more expensive destination)
+      yassirCost = 871;
+      heetchCost = 900;
+      inDriveCost = 870; // Using middle of range (725-1015)
+      vtcEta = 15;
+    } else if (isCentre) {
+      // Pricing data for Alger Centre (the less expensive destination)
+      yassirCost = 341;
+      heetchCost = 352;
+      inDriveCost = 340; // Using middle of range (284-397)
+      vtcEta = 8;
+    } else {
+      // Fallback calculation for other destinations
+      const baseFare = 150; // Starting fare in DA
+      const perKmRate = 60; // Rate per km in DA
+      const surgeMultiplier = isAirport ? 1.4 : 1.0; // Airport surge
+      const timeOfDay = new Date().getHours();
+      const rushHourMultiplier =
+        (timeOfDay >= 7 && timeOfDay <= 9) ||
+        (timeOfDay >= 17 && timeOfDay <= 19)
+          ? 1.3
+          : 1.0;
+
+      yassirCost = Math.round(
+        (baseFare + baseDistance * perKmRate) *
+          surgeMultiplier *
+          rushHourMultiplier *
+          1.1
+      );
+      heetchCost = Math.round(
+        (baseFare + baseDistance * perKmRate) *
+          surgeMultiplier *
+          rushHourMultiplier *
+          0.95
+      );
+      inDriveCost = Math.round(
+        (baseFare + baseDistance * perKmRate) *
+          surgeMultiplier *
+          rushHourMultiplier *
+          0.85
+      );
+      vtcEta = vtcTime + 3;
     }
+
+    // Use the lowest price for the main display
+    const minVtcCost = Math.min(yassirCost, heetchCost, inDriveCost);
+
+    options.push({
+      id: "vtc-options",
+      name: "VTC Services",
+      duration: vtcEta, // Use realistic ETA
+      cost: minVtcCost,
+      transportModes: ["VTC"],
+      description: isAirport
+        ? "Private rides to airport with multiple app options"
+        : isElHarrach
+        ? "Door-to-door service to El Harrach with competitive pricing"
+        : isCentre
+        ? "Quick rides to city center with multiple options"
+        : "Choose from Yassir, Heetch, or InDrive for door-to-door service",
+      icon: Navigation2,
+      color: "bg-emerald-500",
+      steps: [
+        `Choose your preferred VTC app: Yassir: ${yassirCost} DA / Heetch: ${heetchCost} DA / InDrive: ${inDriveCost} DA`,
+        `Wait for pickup (${vtcEta < 10 ? "3-5" : "5-8"} min)`,
+        `Direct ride to ${destination.name} (${vtcEta - 3} min)`,
+        "Pay through app or cash (depending on service)",
+      ],
+    });
 
     // Walking option (for nearby destinations only)
     if (baseDistance < 5) {
@@ -601,6 +667,7 @@ export default function MapView() {
   const handleDestinationSelect = (destination: Destination) => {
     setSelectedDestination(destination);
     addRecentSearch(destination.name);
+    setShouldFitBounds(true); // Allow bounds fitting for new destination
 
     // Generate route options
     const options = generateRouteOptions(destination);
@@ -613,183 +680,38 @@ export default function MapView() {
     }
   };
 
-  const generateRouteForOption = async (
-    option: RouteOption,
-    destination: Destination
-  ) => {
+  const calculateRouteForOption = async (destination: Destination) => {
     if (!currentPosition) return;
 
     setIsCalculatingRoute(true);
 
     try {
-      let routePath: { lat: number; lng: number }[] = [];
-      const isElHarrach = destination.name.includes("El Harrach");
-
-      // Generate different routes based on transport mode
-      if (option.id === "metro-walk") {
-        // Route via metro stations (enhanced for El Harrach)
-        const metroStations = isElHarrach
-          ? [
-              { lat: 36.7403, lng: 3.0508 }, // Tafourah station
-              { lat: 36.7333, lng: 3.0833 }, // Kouba station
-              { lat: 36.7167, lng: 3.1333 }, // El Harrach metro station
-            ]
-          : [
-              { lat: 36.7538, lng: 3.0588 }, // Alger Centre (metro hub)
-              { lat: 36.7403, lng: 3.0508 }, // Tafourah station
-            ];
-
-        routePath = [
-          currentPosition,
-          ...metroStations,
-          { lat: destination.lat, lng: destination.lng },
-        ];
-      } else if (option.id === "tram-walk") {
-        // Route via tram lines (enhanced for El Harrach)
-        const tramStations = isElHarrach
-          ? [
-              { lat: 36.7669, lng: 3.0347 }, // Hydra tram
-              { lat: 36.7525, lng: 3.0519 }, // Maqam Echahid
-              { lat: 36.7403, lng: 3.0508 }, // Tafourah transfer
-              { lat: 36.725, lng: 3.09 }, // Intermediate stop towards El Harrach
-            ]
-          : [
-              { lat: 36.7669, lng: 3.0347 }, // Hydra tram
-              { lat: 36.7525, lng: 3.0519 }, // Maqam Echahid
-            ];
-
-        routePath = [
-          currentPosition,
-          ...tramStations,
-          { lat: destination.lat, lng: destination.lng },
-        ];
-      } else if (option.id === "bus") {
-        // Enhanced bus route for El Harrach
-        if (isElHarrach) {
-          const elHarrachBusStops = [
-            { lat: 36.745, lng: 3.065 }, // Central bus hub
-            { lat: 36.735, lng: 3.095 }, // Intermediate stop
-            { lat: 36.725, lng: 3.115 }, // El Harrach approach
-          ];
-          routePath = [
-            currentPosition,
-            ...elHarrachBusStops,
-            { lat: destination.lat, lng: destination.lng },
-          ];
-        } else {
-          // Direct bus route with fewer stops
-          const busStops = [
-            {
-              lat:
-                currentPosition.lat +
-                (destination.lat - currentPosition.lat) * 0.3,
-              lng:
-                currentPosition.lng +
-                (destination.lng - currentPosition.lng) * 0.3,
-            },
-            {
-              lat:
-                currentPosition.lat +
-                (destination.lat - currentPosition.lat) * 0.7,
-              lng:
-                currentPosition.lng +
-                (destination.lng - currentPosition.lng) * 0.7,
-            },
-          ];
-          routePath = [
-            currentPosition,
-            ...busStops,
-            { lat: destination.lat, lng: destination.lng },
-          ];
-        }
-      } else if (option.id === "combined") {
-        // Enhanced combined transport for El Harrach
-        if (isElHarrach) {
-          const transferPoint = { lat: 36.7403, lng: 3.0508 }; // Tafourah transfer
-          const busStop = {
-            lat:
-              currentPosition.lat +
-              (transferPoint.lat - currentPosition.lat) * 0.4,
-            lng:
-              currentPosition.lng +
-              (transferPoint.lng - currentPosition.lng) * 0.4,
-          };
-          const metroToElHarrach = { lat: 36.725, lng: 3.12 }; // Metro route to El Harrach
-
-          routePath = [
-            currentPosition,
-            busStop,
-            transferPoint,
-            metroToElHarrach,
-            { lat: destination.lat, lng: destination.lng },
-          ];
-        } else {
-          // Bus + Metro combination
-          const transferPoint = { lat: 36.7403, lng: 3.0508 }; // Tafourah transfer
-          const busStop = {
-            lat:
-              currentPosition.lat +
-              (transferPoint.lat - currentPosition.lat) * 0.5,
-            lng:
-              currentPosition.lng +
-              (transferPoint.lng - currentPosition.lng) * 0.5,
-          };
-          routePath = [
-            currentPosition,
-            busStop,
-            transferPoint,
-            { lat: destination.lat, lng: destination.lng },
-          ];
-        }
-      } else if (option.id === "airport-express") {
-        // Direct highway route to airport
-        const highwayPoint = { lat: 36.7, lng: 3.15 }; // Highway junction
-        routePath = [
-          currentPosition,
-          highwayPoint,
-          { lat: destination.lat, lng: destination.lng },
-        ];
-      } else if (option.id === "walking") {
-        // Walking route - more direct path
-        const midPoint = {
-          lat: (currentPosition.lat + destination.lat) / 2,
-          lng: (currentPosition.lng + destination.lng) / 2,
-        };
-        routePath = [
-          currentPosition,
-          midPoint,
-          { lat: destination.lat, lng: destination.lng },
-        ];
-      } else {
-        // Fallback to original routing service
-        const route = await routingService.calculateRoute(currentPosition, {
-          lat: destination.lat,
-          lng: destination.lng,
-        });
-        routePath = route.path;
-      }
+      const route = await routingService.calculateRoute(currentPosition, {
+        lat: destination.lat,
+        lng: destination.lng,
+      });
 
       const routeData: RouteData = {
         from: currentPosition,
         to: { lat: destination.lat, lng: destination.lng },
-        path: routePath,
-        duration: option.duration,
-        distance: option.cost / 10, // Approximate distance from cost
-        instructions: option.steps,
+        path: route.path,
+        duration: route.duration,
+        distance: route.distance,
+        instructions: route.instructions,
       };
 
       setRouteData(routeData);
     } catch (error) {
       console.error("Failed to calculate route:", error);
 
-      // Create a simple fallback route specific to the option
+      // Create a simple fallback route
       const fallbackRoute: RouteData = {
         from: currentPosition,
         to: { lat: destination.lat, lng: destination.lng },
         path: [currentPosition, { lat: destination.lat, lng: destination.lng }],
-        duration: option.duration,
+        duration: Math.floor(Math.random() * 30) + 15,
         distance: Math.floor(Math.random() * 20) + 5,
-        instructions: option.steps,
+        instructions: ["Head towards your destination", "You have arrived"],
       };
 
       setRouteData(fallbackRoute);
@@ -800,10 +722,11 @@ export default function MapView() {
 
   const handleRouteOptionSelect = (option: RouteOption) => {
     setSelectedRouteOption(option);
+    setShouldFitBounds(false); // Don't fit bounds when switching between route options
 
     // Generate new route for the selected option
     if (selectedDestination) {
-      generateRouteForOption(option, selectedDestination);
+      generateRouteForOption(selectedDestination);
     }
   };
 
@@ -815,6 +738,7 @@ export default function MapView() {
     setShowDestinationSuggestions(false);
     setRouteOptions([]);
     setSelectedRouteOption(null);
+    setShouldFitBounds(true); // Reset for next route
   };
 
   const getRouteColor = (routeOption: RouteOption | null): string => {
@@ -931,6 +855,7 @@ export default function MapView() {
                   : null
               }
               onRouteFound={handleRouteFound}
+              shouldFitBounds={shouldFitBounds}
             />
 
             {/* Route Polyline - Always visible when route data exists */}

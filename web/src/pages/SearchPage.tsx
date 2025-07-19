@@ -89,8 +89,16 @@ export default function SearchPage() {
     setSearchFilters(defaultFilters);
   };
 
-  const transportModes = ["Bus", "Metro", "Tram", "Walk"];
-  const providers = ["all", "ETUSA", "TRANSTU", "SETRAM"];
+  const transportModes = ["Bus", "Metro", "Tram", "Walk", "VTC", "Taxi"];
+  const providers = [
+    "all",
+    "ETUSA",
+    "TRANSTU",
+    "SETRAM",
+    "Yassir",
+    "Heetch",
+    "InDrive",
+  ];
 
   const handleFromLocationChange = (value: string) => {
     setFromLocation(value);
