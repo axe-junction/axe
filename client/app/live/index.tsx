@@ -1,121 +1,212 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+
+interface VTCService {
+  price?: number;
+  priceRange?: string;
+  eta: string;
+  icon: any;
+}
 
 export default function LiveScreen() {
-  const liveUpdates = [
-    {
-      id: 1,
-      type: 'train',
-      line: 'Ligne 1',
-      status: 'En cours',
-      delay: '2 min de retard',
-      time: 'Il y a 1 min',
-      color: '#ef4444'
-    },
-    {
-      id: 2,
-      type: 'bus',
-      line: 'Tramway A',
-      status: 'À l\'heure',
-      delay: null,
-      time: 'Il y a 3 min',
-      color: '#10b981'
-    },
-    {
-      id: 3,
-      type: 'subway',
-      line: 'Métro M1',
-      status: 'Perturbation',
-      delay: '5 min de retard',
-      time: 'Il y a 5 min',
-      color: '#f59e0b'
-    },
-    {
-      id: 4,
-      type: 'train',
-      line: 'Ligne 2',
-      status: 'À l\'heure',
-      delay: null,
-      time: 'Il y a 8 min',
-      color: '#10b981'
-    }
-  ];
+  const [currentView, setCurrentView] = useState<'cards' | 'list'>('cards');
 
-  const getTransportIcon = (type: string) => {
-    switch (type) {
-      case 'train':
-        return 'train-outline';
-      case 'bus':
-        return 'bus-outline';
-      case 'subway':
-        return 'subway-outline';
-      default:
-        return 'location-outline';
+  const navigateToHome = () => {
+    router.push('/map');
+  };
+
+  const navigateToProfile = () => {
+    router.push('/profile');
+  };
+
+  const vtcData: Record<string, VTCService> = {
+    "yassir": {
+      "price": 871,
+      "eta": "15 min",
+      "icon": require('../../presentation/assets/1.png')
+    },
+    "InDrive": {
+      "priceRange": "725–1015",
+      "eta": "15 min",
+      "icon": require('../../presentation/assets/2.png')
+    },
+    "yango": {
+      "price": 842,
+      "eta": "15 min",
+      "icon": require('../../presentation/assets/3.png')
+    },
+    "heetch": {
+      "price": 900,
+      "eta": "15 min",
+      "icon": require('../../presentation/assets/1.png')
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Informations en direct</Text>
-        <TouchableOpacity style={styles.refreshButton}>
-          <Ionicons name="refresh" size={24} color="#6b46c1" />
-        </TouchableOpacity>
-      </View>
+  const liveUpdates = [
+    {
+      id: 1,
+      type: 'traffic',
+      message: 'Embouteillage signalé sur Rue Hassiba Ben Bouali',
+      time: 'Il y a 2 min',
+      severity: 'high'
+    },
+    {
+      id: 2,
+      type: 'accident',
+      message: 'Accident mineur à la Place des Martyrs',
+      time: 'Il y a 5 min',
+      severity: 'medium'
+    }
+  ];
 
-      {/* Live Status Indicator */}
-      <BlurView intensity={10} style={styles.statusCard}>
-        <View style={styles.statusIndicator}>
-          <View style={styles.liveDot} />
-          <Text style={styles.statusText}>Mises à jour en temps réel</Text>
-        </View>
-      </BlurView>
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'traffic': return 'car';
+      case 'accident': return 'warning';
+      case 'construction': return 'construct';
+      case 'weather': return 'partly-sunny';
+      default: return 'information-circle';
+    }
+  };
 
-      {/* Updates List */}
-      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionTitle}>Dernières mises à jour</Text>
-        
-        {liveUpdates.map((update) => (
-          <BlurView key={update.id} intensity={10} style={styles.updateCard}>
-            <View style={styles.updateHeader}>
-              <View style={styles.transportInfo}>
-                <View style={[styles.iconContainer, { backgroundColor: update.color }]}>
-                  <Ionicons 
-                    name={getTransportIcon(update.type) as any} 
-                    size={20} 
-                    color="#fff" 
-                  />
-                </View>
-                <View style={styles.lineInfo}>
-                  <Text style={styles.lineName}>{update.line}</Text>
-                  <Text style={styles.updateTime}>{update.time}</Text>
-                </View>
-              </View>
-              <View style={[styles.statusBadge, { backgroundColor: update.color }]}>
-                <Text style={styles.statusBadgeText}>{update.status}</Text>
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'high': return '#ef4444';
+      case 'medium': return '#f59e0b';
+      case 'low': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
+  const renderVTCCards = () => (
+    <View style={styles.cardsContainer}>
+      <Text style={styles.sectionTitle}>Services VTC Disponibles</Text>
+      <View style={styles.cardsGrid}>
+        {Object.entries(vtcData).slice(0, 2).map(([serviceName, data], index) => (
+          <BlurView key={serviceName} intensity={15} style={styles.vtcCard}>
+            <View style={styles.cardHeader}>
+              <Image source={data.icon} style={styles.carIcon} />
+              <Text style={styles.serviceName}>{serviceName}</Text>
+            </View>
+            <View style={styles.cardBody}>
+              <Text style={styles.priceText}>
+                {(data as any).price ? `${(data as any).price} DA` : (data as any).priceRange + ' DA'}
+              </Text>
+              <View style={styles.etaContainer}>
+                <Ionicons name="time-outline" size={16} color="#6b7280" />
+                <Text style={styles.etaText}>{data.eta}</Text>
               </View>
             </View>
-            {update.delay && (
-              <Text style={styles.delayText}>{update.delay}</Text>
-            )}
+            <TouchableOpacity style={styles.bookButton}>
+              <Text style={styles.bookButtonText}>Réserver</Text>
+            </TouchableOpacity>
           </BlurView>
         ))}
+      </View>
+    </View>
+  );
 
-        {/* Emergency Alert */}
-        <BlurView intensity={10} style={[styles.updateCard, styles.alertCard]}>
-          <View style={styles.alertHeader}>
-            <Ionicons name="warning" size={24} color="#ef4444" />
-            <Text style={styles.alertTitle}>Alerte Réseau</Text>
+  const renderVTCList = () => (
+    <View style={styles.listContainer}>
+      <Text style={styles.sectionTitle}>Tous les Services VTC</Text>
+      {Object.entries(vtcData).map(([serviceName, data], index) => (
+        <BlurView key={serviceName} intensity={15} style={styles.vtcListItem}>
+          <View style={styles.listItemLeft}>
+            <Image source={data.icon} style={styles.listCarIcon} />
+            <View style={styles.serviceInfo}>
+              <Text style={styles.listServiceName}>{serviceName}</Text>
+              <View style={styles.listEtaContainer}>
+                <Ionicons name="time-outline" size={14} color="#6b7280" />
+                <Text style={styles.listEtaText}>{data.eta}</Text>
+              </View>
+            </View>
           </View>
-          <Text style={styles.alertMessage}>
-            Travaux sur la ligne principale. Prévoir 10-15 minutes supplémentaires pour les trajets vers le centre-ville.
-          </Text>
-          <Text style={styles.alertTime}>Il y a 15 min</Text>
+          <View style={styles.listItemRight}>
+            <Text style={styles.listPriceText}>
+              {(data as any).price ? `${(data as any).price} DA` : (data as any).priceRange + ' DA'}
+            </Text>
+            <TouchableOpacity style={styles.listBookButton}>
+              <Text style={styles.listBookButtonText}>Réserver</Text>
+            </TouchableOpacity>
+          </View>
         </BlurView>
+      ))}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>En direct</Text>
+        <Text style={styles.subtitle}>Services et mises à jour</Text>
+        
+        <View style={styles.toggleContainer}>
+          <TouchableOpacity 
+            style={[styles.toggleButton, currentView === 'cards' && styles.activeToggle]}
+            onPress={() => setCurrentView('cards')}
+          >
+            <Ionicons name="grid-outline" size={20} color={currentView === 'cards' ? '#fff' : '#6b7280'} />
+            <Text style={[styles.toggleText, currentView === 'cards' && styles.activeToggleText]}>Cards</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.toggleButton, currentView === 'list' && styles.activeToggle]}
+            onPress={() => setCurrentView('list')}
+          >
+            <Ionicons name="list-outline" size={20} color={currentView === 'list' ? '#fff' : '#6b7280'} />
+            <Text style={[styles.toggleText, currentView === 'list' && styles.activeToggleText]}>List</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {currentView === 'cards' ? renderVTCCards() : renderVTCList()}
+        
+        <View style={styles.updatesSection}>
+          <Text style={styles.sectionTitle}>Mises à jour en temps réel</Text>
+          {liveUpdates.map((update) => (
+            <BlurView key={update.id} intensity={15} style={styles.updateCard}>
+              <View style={styles.updateHeader}>
+                <View style={[styles.iconContainer, { backgroundColor: getSeverityColor(update.severity) + '20' }]}>
+                  <Ionicons 
+                    name={getIcon(update.type) as any} 
+                    size={20} 
+                    color={getSeverityColor(update.severity)} 
+                  />
+                </View>
+                <Text style={styles.updateTime}>{update.time}</Text>
+              </View>
+              <Text style={styles.updateMessage}>{update.message}</Text>
+            </BlurView>
+          ))}
+        </View>
+
+        <TouchableOpacity style={styles.refreshButton}>
+          <BlurView intensity={20} style={styles.refreshButtonInner}>
+            <Ionicons name="refresh" size={20} color="#6b46c1" />
+            <Text style={styles.refreshText}>Actualiser</Text>
+          </BlurView>
+        </TouchableOpacity>
       </ScrollView>
+
+      <BlurView intensity={20} style={styles.bottomNavigation}>
+        <TouchableOpacity style={styles.navButton} onPress={navigateToHome}>
+          <Ionicons name="home" size={24} color="#9ca3af" />
+          <Text style={styles.navButtonText}>Home</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={[styles.navButton, styles.activeNavButton]}>
+          <Ionicons name="radio" size={24} color="#6b46c1" />
+          <Text style={[styles.navButtonText, styles.activeNavButtonText]}>Live</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.navButton} onPress={navigateToProfile}>
+          <Ionicons name="person" size={24} color="#9ca3af" />
+          <Text style={styles.navButtonText}>Profile</Text>
+        </TouchableOpacity>
+      </BlurView>
     </SafeAreaView>
   );
 }
@@ -125,138 +216,341 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  headerTitle: {
-    fontSize: 24,
+  
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#1a202c',
+    marginBottom: 4,
   },
-  refreshButton: {
-    padding: 8,
+  
+  subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 16,
   },
-  statusCard: {
-    marginHorizontal: 20,
-    marginVertical: 16,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    overflow: 'hidden',
+
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    padding: 4,
   },
-  statusIndicator: {
+
+  toggleButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
-  liveDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#ef4444',
-    marginRight: 12,
-    shadowColor: '#ef4444',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
+
+  activeToggle: {
+    backgroundColor: '#6b46c1',
   },
-  statusText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a202c',
+
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6b7280',
+    marginLeft: 6,
   },
-  scrollContainer: {
+
+  activeToggleText: {
+    color: '#fff',
+  },
+  
+  content: {
     flex: 1,
-    paddingHorizontal: 20,
+    padding: 20,
+    paddingBottom: 100,
   },
+
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#1a202c',
     marginBottom: 16,
   },
-  updateCard: {
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    overflow: 'hidden',
+
+  // Cards View Styles
+  cardsContainer: {
+    marginBottom: 30,
   },
-  updateHeader: {
+
+  cardsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+  },
+
+  vtcCard: {
+    width: '48%',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(107, 114, 128, 0.1)',
+    overflow: 'hidden',
+  },
+
+  cardHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  carIcon: {
+    width: 32,
+    height: 32,
+    marginRight: 8,
+    borderRadius: 8,
+  },
+
+  serviceName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1a202c',
+    textTransform: 'capitalize',
+  },
+
+  cardBody: {
+    marginBottom: 16,
+  },
+
+  priceText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#6b46c1',
     marginBottom: 8,
   },
-  transportInfo: {
+
+  etaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  etaText: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginLeft: 4,
+  },
+
+  bookButton: {
+    backgroundColor: '#6b46c1',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+
+  bookButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // List View Styles
+  listContainer: {
+    marginBottom: 30,
+  },
+
+  vtcListItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(107, 114, 128, 0.1)',
+    overflow: 'hidden',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  listItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  iconContainer: {
+
+  listCarIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginRight: 12,
+    borderRadius: 8,
   },
-  lineInfo: {
+
+  serviceInfo: {
     flex: 1,
   },
-  lineName: {
+
+  listServiceName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#1a202c',
+    textTransform: 'capitalize',
+    marginBottom: 4,
   },
+
+  listEtaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  listEtaText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginLeft: 4,
+  },
+
+  listItemRight: {
+    alignItems: 'flex-end',
+  },
+
+  listPriceText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#6b46c1',
+    marginBottom: 8,
+  },
+
+  listBookButton: {
+    backgroundColor: '#6b46c1',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+
+  listBookButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // Updates Section
+  updatesSection: {
+    marginBottom: 20,
+  },
+  
+  updateCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(107, 114, 128, 0.1)',
+    overflow: 'hidden',
+  },
+  
+  updateHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  
+  iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
   updateTime: {
     fontSize: 12,
     color: '#6b7280',
-    marginTop: 2,
   },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  delayText: {
+  
+  updateMessage: {
     fontSize: 14,
-    color: '#ef4444',
-    fontWeight: '500',
+    color: '#1a202c',
+    lineHeight: 20,
   },
-  alertCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#ef4444',
+  
+  refreshButton: {
+    marginTop: 20,
+    marginBottom: 20,
   },
-  alertHeader: {
+  
+  refreshButtonInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(107, 70, 193, 0.2)',
+    overflow: 'hidden',
   },
-  alertTitle: {
+  
+  refreshText: {
     fontSize: 16,
+    color: '#6b46c1',
     fontWeight: '600',
-    color: '#ef4444',
     marginLeft: 8,
   },
-  alertMessage: {
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
-    marginBottom: 8,
+  
+  bottomNavigation: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    right: 30,
+    height: 70,
+    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: 'rgba(17, 24, 39, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(75, 85, 99, 0.4)',
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    overflow: 'hidden',
   },
-  alertTime: {
-    fontSize: 12,
-    color: '#6b7280',
+  
+  navButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    minWidth: 70,
+  },
+  
+  activeNavButton: {
+    backgroundColor: 'rgba(107, 70, 193, 0.2)',
+  },
+  
+  navButtonText: {
+    fontSize: 11,
+    color: '#9ca3af',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  
+  activeNavButtonText: {
+    color: '#6b46c1',
   },
 });

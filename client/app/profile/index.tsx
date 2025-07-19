@@ -1,32 +1,35 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { router } from 'expo-router';
 
 export default function ProfileScreen() {
+  const navigateToHome = () => {
+    router.push('/map');
+  };
+
+  const navigateToLive = () => {
+    router.push('/live');
+  };
+
   const profileData = {
-    name: "Ahmed Ben Ali",
-    email: "ahmed.benali@email.com",
-    phone: "+213 555 123 456",
-    joinDate: "Membre depuis mars 2024",
-    tripsCount: 47,
-    favoriteRoutes: 5,
-    points: 1250
+    name: "Soyed Wawachi",
+    email: "soyed.wawachi@email.com",
+    joinDate: "Membre depuis juillet 2024",
+    tripsCount: 23,
+    favoriteRoutes: 3,
   };
 
   const menuItems = [
-    { icon: 'card-outline', title: 'Modes de paiement', subtitle: 'Gérer vos cartes' },
-    { icon: 'time-outline', title: 'Historique des trajets', subtitle: `${profileData.tripsCount} trajets effectués` },
-    { icon: 'heart-outline', title: 'Destinations favorites', subtitle: `${profileData.favoriteRoutes} destinations sauvegardées` },
-    { icon: 'notifications-outline', title: 'Notifications', subtitle: 'Alertes et mises à jour' },
-    { icon: 'shield-outline', title: 'Sécurité et confidentialité', subtitle: 'Paramètres de sécurité' },
-    { icon: 'help-circle-outline', title: 'Aide et support', subtitle: 'FAQ et contact' },
-    { icon: 'settings-outline', title: 'Paramètres', subtitle: 'Préférences de l\'application' },
+    { icon: 'time-outline', title: 'Historique', subtitle: `${profileData.tripsCount} trajets` },
+    { icon: 'heart-outline', title: 'Favoris', subtitle: `${profileData.favoriteRoutes} destinations` },
+    { icon: 'notifications-outline', title: 'Notifications', subtitle: 'Alertes' },
+    { icon: 'settings-outline', title: 'Paramètres', subtitle: 'Préférences' },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profil</Text>
         <TouchableOpacity style={styles.editButton}>
@@ -35,7 +38,6 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        {/* Profile Card */}
         <BlurView intensity={10} style={styles.profileCard}>
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
@@ -48,7 +50,6 @@ export default function ProfileScreen() {
             </View>
           </View>
           
-          {/* Stats */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{profileData.tripsCount}</Text>
@@ -59,33 +60,10 @@ export default function ProfileScreen() {
               <Text style={styles.statNumber}>{profileData.favoriteRoutes}</Text>
               <Text style={styles.statLabel}>Favoris</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{profileData.points}</Text>
-              <Text style={styles.statLabel}>Points</Text>
-            </View>
           </View>
         </BlurView>
 
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <BlurView intensity={10} style={styles.actionCard}>
-            <Ionicons name="qr-code" size={24} color="#6b46c1" />
-            <Text style={styles.actionText}>QR Code</Text>
-          </BlurView>
-          <BlurView intensity={10} style={styles.actionCard}>
-            <Ionicons name="wallet-outline" size={24} color="#6b46c1" />
-            <Text style={styles.actionText}>Portefeuille</Text>
-          </BlurView>
-          <BlurView intensity={10} style={styles.actionCard}>
-            <Ionicons name="ticket-outline" size={24} color="#6b46c1" />
-            <Text style={styles.actionText}>Billets</Text>
-          </BlurView>
-        </View>
-
-        {/* Menu Items */}
         <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>Paramètres du compte</Text>
           {menuItems.map((item, index) => (
             <TouchableOpacity key={index} style={styles.menuItem}>
               <BlurView intensity={10} style={styles.menuItemContent}>
@@ -103,15 +81,24 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Se déconnecter</Text>
-        </TouchableOpacity>
-
-        {/* App Version */}
-        <Text style={styles.versionText}>Version 1.0.0</Text>
       </ScrollView>
+
+      <BlurView intensity={20} style={styles.bottomNavigation}>
+        <TouchableOpacity style={styles.navButton} onPress={navigateToHome}>
+          <Ionicons name="home" size={24} color="#9ca3af" />
+          <Text style={styles.navButtonText}>Home</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.navButton} onPress={navigateToLive}>
+          <Ionicons name="radio" size={24} color="#9ca3af" />
+          <Text style={styles.navButtonText}>Live</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={[styles.navButton, styles.activeNavButton]}>
+          <Ionicons name="person" size={24} color="#6b46c1" />
+          <Text style={[styles.navButtonText, styles.activeNavButtonText]}>Profile</Text>
+        </TouchableOpacity>
+      </BlurView>
     </SafeAreaView>
   );
 }
@@ -129,6 +116,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
   },
   headerTitle: {
     fontSize: 24,
@@ -141,6 +129,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingBottom: 100,
   },
   profileCard: {
     marginVertical: 20,
@@ -207,34 +196,8 @@ const styles = StyleSheet.create({
     height: 40,
     backgroundColor: '#e5e7eb',
   },
-  quickActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 30,
-  },
-  actionCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 16,
-    marginHorizontal: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    overflow: 'hidden',
-  },
-  actionText: {
-    fontSize: 12,
-    color: '#1a202c',
-    marginTop: 8,
-    fontWeight: '500',
-  },
   menuSection: {
     marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a202c',
-    marginBottom: 16,
   },
   menuItem: {
     marginBottom: 8,
@@ -275,22 +238,53 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6b7280',
   },
-  logoutButton: {
-    backgroundColor: '#ef4444',
-    padding: 16,
-    borderRadius: 12,
+  
+  bottomNavigation: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    right: 30,
+    height: 70,
+    borderRadius: 25,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'space-around',
+    backgroundColor: 'rgba(17, 24, 39, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(75, 85, 99, 0.4)',
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    overflow: 'hidden',
   },
-  logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  
+  navButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    minWidth: 70,
   },
-  versionText: {
-    textAlign: 'center',
-    fontSize: 12,
+  
+  activeNavButton: {
+    backgroundColor: 'rgba(107, 70, 193, 0.2)',
+  },
+  
+  navButtonText: {
+    fontSize: 11,
     color: '#9ca3af',
-    marginBottom: 20,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  
+  activeNavButtonText: {
+    color: '#6b46c1',
   },
 });
