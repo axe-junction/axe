@@ -19,7 +19,7 @@ type RoutingServiceClient struct {
 func NewRoutingServiceClient(cfg *config.Config) (*RoutingServiceClient, error) {
 	address := fmt.Sprintf("%s:%s", cfg.Services.RoutingService.Host, cfg.Services.RoutingService.Port)
 
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to routing service: %w", err)
 	}
@@ -51,7 +51,7 @@ type VTCServiceClient struct {
 func NewVTCServiceClient(cfg *config.Config) (*VTCServiceClient, error) {
 	address := fmt.Sprintf("%s:%s", cfg.Services.VTCService.Host, cfg.Services.VTCService.Port)
 
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to VTC service: %w", err)
 	}
