@@ -8,7 +8,7 @@ interface VTCService {
   price?: number;
   priceRange?: string;
   eta: string;
-  icon: any;
+  icon: string;
 }
 
 export default function LiveScreen() {
@@ -26,22 +26,22 @@ export default function LiveScreen() {
     "yassir": {
       "price": 871,
       "eta": "15 min",
-      "icon": require('../../presentation/assets/1.png')
+      "icon": "car-sport"
     },
     "InDrive": {
       "priceRange": "725–1015",
       "eta": "15 min",
-      "icon": require('../../presentation/assets/2.png')
+      "icon": "car"
     },
     "yango": {
       "price": 842,
       "eta": "15 min",
-      "icon": require('../../presentation/assets/3.png')
+      "icon": "car-outline"
     },
     "heetch": {
       "price": 900,
       "eta": "15 min",
-      "icon": require('../../presentation/assets/1.png')
+      "icon": "car-sport-outline"
     }
   };
 
@@ -88,7 +88,9 @@ export default function LiveScreen() {
         {Object.entries(vtcData).slice(0, 2).map(([serviceName, data], index) => (
           <BlurView key={serviceName} intensity={15} style={styles.vtcCard}>
             <View style={styles.cardHeader}>
-              <Image source={data.icon} style={styles.carIcon} />
+              <View style={styles.carIcon}>
+                <Ionicons name={data.icon as any} size={24} color="#6b46c1" />
+              </View>
               <Text style={styles.serviceName}>{serviceName}</Text>
             </View>
             <View style={styles.cardBody}>
@@ -115,7 +117,9 @@ export default function LiveScreen() {
       {Object.entries(vtcData).map(([serviceName, data], index) => (
         <BlurView key={serviceName} intensity={15} style={styles.vtcListItem}>
           <View style={styles.listItemLeft}>
-            <Image source={data.icon} style={styles.listCarIcon} />
+            <View style={styles.listCarIcon}>
+              <Ionicons name={data.icon as any} size={20} color="#6b46c1" />
+            </View>
             <View style={styles.serviceInfo}>
               <Text style={styles.listServiceName}>{serviceName}</Text>
               <View style={styles.listEtaContainer}>
@@ -317,6 +321,9 @@ const styles = StyleSheet.create({
     height: 32,
     marginRight: 8,
     borderRadius: 8,
+    backgroundColor: 'rgba(107, 70, 193, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   serviceName: {
@@ -390,6 +397,9 @@ const styles = StyleSheet.create({
     height: 40,
     marginRight: 12,
     borderRadius: 8,
+    backgroundColor: 'rgba(107, 70, 193, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   serviceInfo: {

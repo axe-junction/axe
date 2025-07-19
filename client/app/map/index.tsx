@@ -1,104 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, TextInput } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { BlurView } from 'expo-blur';
 import { router } from 'expo-router';
 
-interface CustomMarker {
-  id: string;
-  coordinate: {
-    latitude: number;
-    longitude: number;
-  };
-  title?: string;
-}
-
 export default function TransitApp() {
     const [currentScreen, setCurrentScreen] = useState<'map' | 'destination'>('map');
     const [searchQuery, setSearchQuery] = useState('');
-    const [fromLocation, setFromLocation] = useState('Your Location');
+    const [fromLocation, setFromLocation] = useState('');
     const [toLocation, setToLocation] = useState('');
-    const [customMarkers, setCustomMarkers] = useState<CustomMarker[]>([]);
-    const [selectedDestination, setSelectedDestination] = useState<any>(null);
-    const mapRef = useRef<MapView>(null);
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const markerCounter = useRef(0);
 
     const handleSearchClick = () => setCurrentScreen('destination');
-    const handleBackToMap = () => {
-      setCurrentScreen('map');
-      if (selectedDestination) {
-        navigateToDestination(selectedDestination);
-      }
-    };
-
-    const navigateToDestination = (destination: any) => {
-      if (mapRef.current && destination.coordinate) {
-        mapRef.current.animateToRegion({
-          latitude: destination.coordinate.latitude,
-          longitude: destination.coordinate.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }, 1000);
-        
-        // Check if marker already exists for this destination
-        const existingMarker = customMarkers.find(marker => 
-          marker.coordinate.latitude === destination.coordinate.latitude &&
-          marker.coordinate.longitude === destination.coordinate.longitude &&
-          marker.title === destination.name
-        );
-        
-        if (!existingMarker) {
-          markerCounter.current += 1;
-          const newMarker: CustomMarker = {
-            id: `destination-${Date.now()}-${markerCounter.current}`,
-            coordinate: destination.coordinate,
-            title: destination.name
-          };
-          setCustomMarkers(prev => [...prev, newMarker]);
-        }
-      }
-    };
-
-    const handleMapPress = (event: any) => {
-      const { coordinate } = event.nativeEvent;
-      markerCounter.current += 1;
-      const newMarker: CustomMarker = {
-        id: `marker-${Date.now()}-${markerCounter.current}`,
-        coordinate: coordinate,
-        title: `Custom Marker`
-      };
-      setCustomMarkers(prev => [...prev, newMarker]);
-    };
-
-    const handleMarkerPress = (markerId: string) => {
-      setCustomMarkers(prev => prev.filter(marker => marker.id !== markerId));
-    };
-
-    const clearAllMarkers = () => {
-      setCustomMarkers([]);
-    };
-
-    const handleDestinationSearch = (text: string) => {
-      setToLocation(text);
-      if (text.length > 2) {
-        const filteredResults = recentDestinations.filter(dest => 
-          dest.name.toLowerCase().includes(text.toLowerCase()) ||
-          dest.location.toLowerCase().includes(text.toLowerCase())
-        );
-        setSearchResults(filteredResults);
-      } else {
-        setSearchResults([]);
-      }
-    };
-
-    const selectSearchResult = (destination: any) => {
-      setToLocation(destination.name);
-      setSelectedDestination(destination);
-      setSearchResults([]);
-      navigateToDestination(destination);
-    };
+    const handleBackToMap = () => setCurrentScreen('map');
 
     const navigateToLive = () => {
         router.push('/live');
@@ -109,16 +23,8 @@ export default function TransitApp() {
     };
 
   const recentDestinations = [
-    { 
-      name: "1er Mai", 
-      location: "P2WH+RFW, Alger",
-      coordinate: { latitude: 36.7580, longitude: 3.0520 }
-    },
-    { 
-      name: "Sonatrach - Direction Générale", 
-      location: "P2WH+RFW, Hydra",
-      coordinate: { latitude: 36.7620, longitude: 3.0450 }
-    },
+    { name: "1er Mai", location: "P2WH+RFW, Alger" },
+    { name: "Sonatrach - Direction Générale", location: "P2WH+RFW, Hydra" },
   ];
 
   const routeStations = [
@@ -198,7 +104,6 @@ export default function TransitApp() {
       return (
         <View style={styles.container}>
           <MapView
-            ref={mapRef}
             style={styles.mapBackground}
             customMapStyle={customMapStyle}
             initialRegion={{
@@ -207,23 +112,11 @@ export default function TransitApp() {
               latitudeDelta: 0.05,
               longitudeDelta: 0.05,
             }}
-            onPress={handleMapPress}
           >
             <Marker
               coordinate={{ latitude: 36.7538, longitude: 3.0588 }}
               pinColor="#6b46c1"
             />
-            
-            {customMarkers.map((marker) => (
-              <Marker
-                key={marker.id}
-                coordinate={marker.coordinate}
-                pinColor="#ef4444"
-                title={marker.title}
-                description="Tap to remove"
-                onPress={() => handleMarkerPress(marker.id)}
-              />
-            ))}
             
           </MapView>
 
@@ -248,44 +141,23 @@ export default function TransitApp() {
             <View style={styles.inputContainer}>
               <BlurView intensity={10} style={styles.inputWrapper}>
                 <View style={styles.inputDot} />
-                <Ionicons name="location" size={16} color="#6b7280" style={styles.inputIcon} />
                 <TextInput
                   placeholder="Départ"
                   placeholderTextColor="rgba(107, 114, 128, 1)"
-                  style={[styles.inputField, { paddingLeft: 35 }]}
+                  style={styles.inputField}
                   value={fromLocation}
-                  editable={false}
+                  onChangeText={setFromLocation}
                 />
               </BlurView>
               <BlurView intensity={10} style={styles.inputWrapper}>
-                <Ionicons name="search" size={16} color="#ffffff" style={styles.searchIcon} />
                 <TextInput
-                  placeholder="Où voulez-vous aller?"
-                  placeholderTextColor="rgba(255, 255, 255, 0.8)"
+                  placeholder="Destination"
+                  placeholderTextColor="rgba(255, 255, 255, 1)"
                   style={[styles.inputField, styles.destinationInput]}
                   value={toLocation}
-                  onChangeText={handleDestinationSearch}
-                  autoFocus={true}
+                  onChangeText={setToLocation}
                 />
               </BlurView>
-              
-              {searchResults.length > 0 && (
-                <BlurView intensity={15} style={styles.searchResultsContainer}>
-                  {searchResults.map((result, index) => (
-                    <TouchableOpacity 
-                      key={index}
-                      style={styles.searchResultItem}
-                      onPress={() => selectSearchResult(result)}
-                    >
-                      <Ionicons name="location-outline" size={20} color="#6b46c1" />
-                      <View style={styles.searchResultText}>
-                        <Text style={styles.searchResultName}>{result.name}</Text>
-                        <Text style={styles.searchResultLocation}>{result.location}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </BlurView>
-              )}
             </View>
 
             <View style={styles.filterSection}>
@@ -320,16 +192,6 @@ export default function TransitApp() {
                 })}
               </View>
             </View>
-
-            {toLocation.length > 0 && (
-              <TouchableOpacity 
-                style={styles.goButton}
-                onPress={handleBackToMap}
-              >
-                <Text style={styles.goButtonText}>Aller à cette destination</Text>
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
-              </TouchableOpacity>
-            )}
           </BlurView>
         </View>
       );
@@ -338,7 +200,6 @@ export default function TransitApp() {
     return (
       <View style={styles.container}>
         <MapView
-          ref={mapRef}
           style={styles.mapBackground}
           customMapStyle={customMapStyle}
           initialRegion={{
@@ -347,7 +208,6 @@ export default function TransitApp() {
             latitudeDelta: 0.05,
             longitudeDelta: 0.05,
           }}
-          onPress={handleMapPress}
         >
           <Marker
             coordinate={{ latitude: 36.7538, longitude: 3.0588 }}
@@ -361,18 +221,6 @@ export default function TransitApp() {
             title="Station Arrivée"
             description="Arrivée"
           />
-          
-          {customMarkers.map((marker) => (
-            <Marker
-              key={marker.id}
-              coordinate={marker.coordinate}
-              pinColor="#ef4444"
-              title={marker.title}
-              description="Tap to remove"
-              onPress={() => handleMarkerPress(marker.id)}
-            />
-          ))}
-          
           <Polyline
             coordinates={routePath}
             strokeColor="#6b46c1"
@@ -400,21 +248,8 @@ export default function TransitApp() {
           style={styles.searchButton}
           onPress={handleSearchClick}
         >
-          <Ionicons name="search" size={20} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.searchButtonText}>Où voulez-vous aller?</Text>
+          <Text style={styles.searchButtonText}>Rechercher une destination</Text>
         </TouchableOpacity>
-
-        {customMarkers.length > 0 && (
-          <TouchableOpacity 
-            style={styles.clearButton}
-            onPress={clearAllMarkers}
-          >
-            <BlurView intensity={20} style={styles.clearButtonInner}>
-              <Ionicons name="trash-outline" size={20} color="#ef4444" />
-              <Text style={styles.clearButtonText}>Clear ({customMarkers.length})</Text>
-            </BlurView>
-          </TouchableOpacity>
-        )}
 
         <BlurView intensity={10} style={styles.recentDestinations}>
           <Text style={styles.sectionTitle}>Destinations récentes</Text>
@@ -424,9 +259,7 @@ export default function TransitApp() {
               style={styles.destinationItem}
               onPress={() => {
                 setToLocation(destination.name);
-                setSelectedDestination(destination);
-                navigateToDestination(destination);
-                handleBackToMap();
+                handleSearchClick();
               }}
             >
               <View style={styles.destinationIcon}>
@@ -553,65 +386,10 @@ export default function TransitApp() {
       color: '#1a202c',
       backgroundColor: 'rgba(243, 244, 246, 0.8)',
     },
-    inputIcon: {
-      position: 'absolute',
-      left: 12,
-      top: 18,
-      zIndex: 1,
-    },
-    searchIcon: {
-      position: 'absolute',
-      left: 16,
-      top: 18,
-      zIndex: 1,
-    },
     destinationInput: {
       backgroundColor: 'rgba(107, 70, 193, 0.8)',
       color: '#fff',
-      paddingLeft: 45,
-    },
-    searchResultsContainer: {
-      marginTop: 8,
-      borderRadius: 12,
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      maxHeight: 200,
-      overflow: 'hidden',
-    },
-    searchResultItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: 'rgba(107, 114, 128, 0.1)',
-    },
-    searchResultText: {
-      flex: 1,
-      marginLeft: 12,
-    },
-    searchResultName: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: '#1a202c',
-    },
-    searchResultLocation: {
-      fontSize: 12,
-      color: '#6b7280',
-      marginTop: 2,
-    },
-    goButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#6b46c1',
-      borderRadius: 12,
-      paddingVertical: 14,
-      marginTop: 16,
-    },
-    goButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-      marginRight: 8,
+      paddingLeft: 16,
     },
     filterSection: {
       marginBottom: 10,
@@ -687,9 +465,7 @@ export default function TransitApp() {
       backgroundColor: '#6b46c1',
       borderRadius: 24,
       paddingVertical: 16,
-      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.2,
@@ -699,30 +475,6 @@ export default function TransitApp() {
       color: '#fff',
       fontSize: 16,
       fontWeight: '600',
-    },
-    clearButton: {
-      position: 'absolute',
-      top: '60%',
-      right: 20,
-      borderRadius: 20,
-      overflow: 'hidden',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-    },
-    clearButtonInner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    },
-    clearButtonText: {
-      color: '#ef4444',
-      fontSize: 14,
-      fontWeight: '600',
-      marginLeft: 6,
     },
     recentDestinations: {
       position: 'absolute',
