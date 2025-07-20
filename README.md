@@ -125,18 +125,6 @@ AXE follows a modular microservices architecture with **clear domain separation*
 
 ---
 
-##  Diagrams
-
-> Visit `docs/diagrams.md` for full **Mermaid UML Diagrams**, including:
-- Component Diagram
-- Deployment Diagram
-- Sequence Diagrams (OAuth + Sync Flow)
-- Activity Diagram (Agent Flow + Diffing)
-- Class Diagrams (Routing Models + Agent Structure)
-- State Diagrams
-
----
-
 ##  Getting Started
 
 ### Prerequisites
