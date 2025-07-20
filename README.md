@@ -136,8 +136,8 @@ AXE follows a modular microservices architecture with **clear domain separation*
 ### Run Locally
 
 ```bash
-git clone https://github.com/your-org/axe-server.git
-cd axe-server
+git clone https://github.com/axe-junction/axe.git
+cd axe
 docker-compose up --build
 ```
 
