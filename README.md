@@ -14,17 +14,25 @@ AXE follows a modular microservices architecture with **clear domain separation*
 
 | Service         | Tech Stack                    | Purpose                                |
 |-----------------|-------------------------------|----------------------------------------|
-|  Gateway      | Go, Fiber, OAuth 2.0, gRPC     | API Gateway, Auth, Routing orchestration |
+|  Gateway      | Go, gin, OAuth 2.0, gRPC     | API Gateway, Auth, Routing orchestration |
 |  Routing      | Go, OSRM, RabbitMQ, PostgreSQL | Multi-modal journey planner            |
-|  VTC          | Go, Kafka, Geocoding           | Ride-hailing & dynamic pricing         |
-|  Data         | FastAPI, Agents         | AI-powered data collection & sync      |
+|  VTC          | Go, Geocoding           | Ride-hailing & dynamic pricing         |
+|  Data         | FastAPI, RabbitMQ ,Agents         | AI-powered data collection & sync      |
+
+### High Level Architecture Overview
+![hlao](docs/hlao.png) 
+
+### Data Service Architecture Overview
+
+![Data Service Architecture](docs/dsao.png)
+![Data Service & Routing Service](docs/dsaos.png)
 
 ---
 
 ## Service Breakdown
 
 ###  Gateway Service
-- Built with **Go + Fiber**
+- Built with **Go + gin**
 - Handles **OAuth 2.0 login** (Google)
 - Issues **JWT tokens** to secure access
 - Uses **gRPC** to communicate with Routing and VTC services
@@ -150,7 +158,7 @@ docker-compose up --build
 ##  Repo Structure
 
 ```
-/gateway         # Fiber + Go auth & orchestration
+/gateway         # gin + Go auth & orchestration
 /routing         # Public transport logic + OSRM
 /vtc             # Ride-hailing & dynamic pricing
 /data_service    # FastAPI multi-agent system
