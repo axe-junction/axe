@@ -20,7 +20,7 @@ AXE follows a modular microservices architecture with **clear domain separation*
 |  Data         | FastAPI, RabbitMQ ,Agents         | AI-powered data collection & sync      |
 
 ### UI Screens 
-[UI Screens](docs/ui.png)
+![UI Screens](docs/ui.png)
 
 ### High Level Architecture Overview
 ![hlao](docs/hlao.png) 
