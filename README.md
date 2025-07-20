@@ -146,24 +146,18 @@ docker-compose up --build
 ##  Repo Structure
 
 ```
-/gateway         # gin + Go auth & orchestration
-/routing         # Public transport logic + OSRM
-/vtc             # Ride-hailing & dynamic pricing
-/data_service    # FastAPI multi-agent system
-/proto           # gRPC definitions
-/config          # Env, database configs
-/docs            # UML diagrams, API specs
+/gateway         # Gin + Go for authentication and orchestration (packages/gateway)
+/routing         # Public transport service with OSRM logic (packages/routing-service)
+/vtc             # Ride-hailing service with dynamic pricing logic (packages/vtc-service)
+/data_service    # FastAPI multi-agent system for data extraction/cleaning (packages/data-service)
+/proto           # gRPC definitions (packages/gateway/pkg/pb)
+/config          # Config files like env, db setup (under internal/config across services)
+/docs            # UML diagrams, architecture, and design references (./docs)
+/client          # React Native frontend (mobile)
+/web             # Web frontend built with React + Vite
+/shared          # Shared code/resources across services (currently empty or reserved)
+/deployments     # Kubernetes, Docker Swarm, or infra-as-code setup
 ```
-
----
-
-##  Contributing
-
-We welcome contributions for:
-- New agents (e.g., image analysis)
-- Localization (French, Arabic)
-- Mobile/Frontend integration
-- Performance improvements
 
 ---
 
