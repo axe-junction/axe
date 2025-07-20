@@ -24,8 +24,8 @@ AXE follows a modular microservices architecture with **clear domain separation*
 
 ### Data Service Architecture Overview
 
-![Data Service Architecture](docs/dsao.png)
 ![Data Service & Routing Service](docs/dsaos.png)
+![Data Service Architecture](docs/dsao.png)
 
 ---
 
